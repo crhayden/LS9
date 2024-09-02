@@ -237,11 +237,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/STM32_WPAN/utilities/dbg_trace.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/dis.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/STM32_WPAN/ble/svc/Src/dis.c</locationURI>
-		</link>
-		<link>
 			<name>Middlewares/STM32_WPAN/hci_tl.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl.c</locationURI>
@@ -250,11 +245,6 @@
 			<name>Middlewares/STM32_WPAN/hci_tl_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl_if.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/hrs.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/STM32_WPAN/ble/svc/Src/hrs.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/STM32_WPAN/osal.c</name>
@@ -360,16 +350,6 @@
 			<name>Application/User/STM32_WPAN/App/app_ble.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/dis_app.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/dis_app.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/hrs_app.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/hrs_app.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/hw_ipcc.c</name>

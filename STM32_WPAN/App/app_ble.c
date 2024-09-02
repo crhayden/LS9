@@ -33,8 +33,7 @@
 #include "stm32_lpm.h"
 #include "otp.h"
 
-#include "hrs_app.h"
-#include "dis_app.h"
+#include "custom_app.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -222,23 +221,16 @@ PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t
 static BleApplicationContext_t BleApplicationContext;
 static uint16_t AdvIntervalMin, AdvIntervalMax;
 
-static const char a_LocalName[] = {AD_TYPE_COMPLETE_LOCAL_NAME ,'H','R','S','T','M'};
-uint8_t a_ManufData[14] = {sizeof(a_ManufData)-1,
-                           AD_TYPE_MANUFACTURER_SPECIFIC_DATA,
-                           0x01 /*SKD version */,
-                           0x00 /* Generic*/,
-                           0x00 /* GROUP A Feature  */,
-                           0x00 /* GROUP A Feature */,
-                           0x00 /* GROUP B Feature */,
-                           0x00 /* GROUP B Feature */,
-                           0x00, /* BLE MAC start -MSB */
-                           0x00,
-                           0x00,
-                           0x00,
-                           0x00,
-                           0x00, /* BLE MAC stop */
-                          };
+static const char a_LocalName[] = {AD_TYPE_COMPLETE_LOCAL_NAME ,'S','e','r','i','a', 'l','_','N','u', 'm'};
+/**
+ * Advertising Data
+ */
+uint8_t a_AdvData[14] =
+{
+  2, AD_TYPE_TX_POWER_LEVEL, 0 /* -0.15dBm */, /* Transmission Power */
+  10, AD_TYPE_COMPLETE_LOCAL_NAME, 'S', 'e', 'r', 'i', 'a', 'l', 'N', 'u', 'm',  /* Complete name */
 
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -389,18 +381,18 @@ void APP_BLE_Init(void)
    * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
    */
 #if (BLE_CFG_OTA_REBOOT_CHAR != 0)
-  a_ManufData[sizeof(a_ManufData)-8] = CFG_FEATURE_OTA_REBOOT;
+  a_AdvData[sizeof(a_AdvData)-8] = CFG_FEATURE_OTA_REBOOT;
 #endif /* BLE_CFG_OTA_REBOOT_CHAR != 0 */
 
   /**
    * Initialize DIS Application
    */
-  DISAPP_Init();
+  //DISAPP_Init();
 
   /**
    * Initialize HRS Application
    */
-  HRSAPP_Init();
+  //HRSAPP_Init();
 
   /* USER CODE BEGIN APP_BLE_Init_3 */
 
@@ -416,7 +408,7 @@ void APP_BLE_Init(void)
    */
   BleApplicationContext.BleApplicationContext_legacy.advtServUUID[0] = AD_TYPE_16_BIT_SERV_UUID;
   BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen = 1;
-  Add_Advertisment_Service_UUID(HEART_RATE_SERVICE_UUID);
+  //Add_Advertisment_Service_UUID(HEART_RATE_SERVICE_UUID);
 
   /* Initialize intervals for reconnexion without intervals update */
   AdvIntervalMin = CFG_FAST_CONN_ADV_INTERVAL_MIN;
@@ -713,15 +705,6 @@ static void Ble_Hci_Gap_Gatt_Init(void)
     APP_DBG_MSG("  Public Bluetooth Address: %02x:%02x:%02x:%02x:%02x:%02x\n",p_bd_addr[5],p_bd_addr[4],p_bd_addr[3],p_bd_addr[2],p_bd_addr[1],p_bd_addr[0]);
   }
 
-#if (CFG_BLE_ADDRESS_TYPE == GAP_PUBLIC_ADDR)
-  /* BLE MAC in ADV Packet */
-  a_ManufData[ sizeof(a_ManufData)-6] = p_bd_addr[5];
-  a_ManufData[ sizeof(a_ManufData)-5] = p_bd_addr[4];
-  a_ManufData[ sizeof(a_ManufData)-4] = p_bd_addr[3];
-  a_ManufData[ sizeof(a_ManufData)-3] = p_bd_addr[2];
-  a_ManufData[ sizeof(a_ManufData)-2] = p_bd_addr[1];
-  a_ManufData[ sizeof(a_ManufData)-1] = p_bd_addr[0];
-#endif /* CFG_BLE_ADDRESS_TYPE == GAP_PUBLIC_ADDR */
 
   /**
    * Static random Address
@@ -730,13 +713,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
    * The RNG may be used to provide a random number on each power on
    */
 #if (CFG_BLE_ADDRESS_TYPE != GAP_PUBLIC_ADDR)
-  /* BLE MAC in ADV Packet */
-  a_ManufData[ sizeof(a_ManufData)-6] = a_srd_bd_addr[1] >> 8 ;
-  a_ManufData[ sizeof(a_ManufData)-5] = a_srd_bd_addr[1];
-  a_ManufData[ sizeof(a_ManufData)-4] = a_srd_bd_addr[0] >> 24;
-  a_ManufData[ sizeof(a_ManufData)-3] = a_srd_bd_addr[0] >> 16;
-  a_ManufData[ sizeof(a_ManufData)-2] = a_srd_bd_addr[0] >> 8;
-  a_ManufData[ sizeof(a_ManufData)-1] = a_srd_bd_addr[0];
+
 
   ret = aci_hal_write_config_data(CONFIG_DATA_RANDOM_ADDRESS_OFFSET, CONFIG_DATA_RANDOM_ADDRESS_LEN, (uint8_t*)a_srd_bd_addr);
   if (ret != BLE_STATUS_SUCCESS)
@@ -1005,7 +982,7 @@ static void Adv_Request(APP_BLE_ConnStatus_t NewStatus)
   }
 
   /* Update Advertising data */
-  ret = aci_gap_update_adv_data(sizeof(a_ManufData), (uint8_t*) a_ManufData);
+  ret = aci_gap_update_adv_data(sizeof(a_AdvData), (uint8_t*) a_AdvData);
   if (ret != BLE_STATUS_SUCCESS)
   {
     if (NewStatus == APP_BLE_FAST_ADV)
