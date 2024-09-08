@@ -18,7 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
+#include <LS_Biometric_Lite.h>
+#include <LS_Motor_DRV8823.h>
+#include <LS_Accel_MC3479.h>
+#include <LS_KeyPad.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,12 +56,6 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 /* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
-};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -73,7 +70,6 @@ static void MX_IPCC_Init(void);
 static void MX_RNG_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_RF_Init(void);
-void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -151,7 +147,10 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  LS_BM_Lite_Init();
+  LS_Accel_MC3479_Init();
+  LS_Motor_DRV8823_Init();
+  LS_KeyPad_Init();
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -557,23 +556,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(500);
-  }
-  /* USER CODE END 5 */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

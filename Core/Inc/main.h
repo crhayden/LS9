@@ -32,6 +32,7 @@ extern "C" {
 #include "app_conf.h"
 #include "app_entry.h"
 #include "app_common.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
