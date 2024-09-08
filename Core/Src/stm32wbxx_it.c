@@ -32,6 +32,10 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#ifdef DUALCORE_FLASH_SHARING
+#define HSEM_PROCESS_1 12U /* Number taken randomly to identify the process locking a semaphore in the driver context */
+#endif
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,6 +46,10 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+/* During the cleanup phase in EE_Init, AddressRead is the address being read */
+extern __IO uint32_t AddressRead;
+/* Flag equal to 1 when the cleanup phase is in progress, 0 if not */
+extern __IO uint8_t CleanupPhase;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,6 +83,47 @@ void NMI_Handler(void)
 {
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 
+	  /* Check if NMI is due to flash ECCD (error detection) */
+	  if (__HAL_FLASH_GET_FLAG(FLASH_FLAG_ECCD))
+	  {
+	    if(CleanupPhase==1)
+	    {
+	      if ((AddressRead >= START_PAGE_ADDRESS) && (AddressRead <= END_EEPROM_ADDRESS))
+	      {
+	        /* Delete the corrupted flash address */
+	        if (EE_DeleteCorruptedFlashAddress((uint32_t)AddressRead) == EE_OK)
+	        {
+	          /* Resume execution if deletion succeeds */
+	          return;
+	        }
+	        /* If we do not succeed to delete the corrupted flash address */
+	        /* This might be because we try to write 0 at a line already considered at 0 which is a forbidden operation */
+	        /* This problem triggers PROGERR, PGAERR and PGSERR flags */
+	        else
+	        {
+	          /* We check if the flags concerned have been triggered */
+	          if((__HAL_FLASH_GET_FLAG(FLASH_FLAG_PROGERR)) && (__HAL_FLASH_GET_FLAG(FLASH_FLAG_PGAERR))
+	             && (__HAL_FLASH_GET_FLAG(FLASH_FLAG_PGSERR)))
+	          {
+	            /* If yes, we clear them */
+	            __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_PROGERR);
+	            __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_PGAERR);
+	            __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_PGSERR);
+
+	            /* And we exit from NMI without doing anything */
+	            /* We do not invalidate that line because it is not programmable at 0 till the next page erase */
+	            /* The only consequence is that this line will trigger a new NMI later */
+	            return;
+	          }
+	        }
+	      }
+	    }
+	    else
+	    {
+	      __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ECCD);
+	      return;
+	    }
+	  }
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
    while (1)
@@ -233,6 +282,35 @@ void IPCC_C1_TX_IRQHandler(void)
   /* USER CODE END IPCC_C1_TX_IRQn 1 */
 }
 
+
+/**
+  * @brief  This function handles Flash interrupt request.
+  * @param  None
+  * @retval None
+  */
+void FLASH_IRQHandler(void)
+{
+#ifdef DUALCORE_FLASH_SHARING
+
+  /* We enter a critical section */
+  UTILS_ENTER_CRITICAL_SECTION();
+
+  /*  Try to take the HW flash protection semaphore 7 until it is released */
+  while(HAL_HSEM_Take(CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID, HSEM_PROCESS_1) != HAL_OK)
+  {
+    while( HAL_HSEM_IsSemTaken(CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID) ) ;
+  }
+#endif
+
+  HAL_FLASH_IRQHandler();
+
+#ifdef DUALCORE_FLASH_SHARING
+  /* Release the HW Semaphore */
+  HAL_HSEM_Release(CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID, HSEM_PROCESS_1);
+  /* We exit the critical section */
+  UTILS_EXIT_CRITICAL_SECTION();
+#endif
+}
 /**
   * @brief This function handles HSEM global interrupt.
   */

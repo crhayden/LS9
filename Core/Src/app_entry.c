@@ -31,6 +31,7 @@
 #include "dbg_trace.h"
 #include "shci.h"
 #include "otp.h"
+#include <LS_Flash_Internal.h>
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -63,6 +64,7 @@ PLACE_IN_SECTION("MB_MEM2") ALIGN(4) static uint8_t SystemSpareEvtBuffer[sizeof(
 PLACE_IN_SECTION("MB_MEM2") ALIGN(4) static uint8_t BleSpareEvtBuffer[sizeof(TL_PacketHeader_t) + TL_EVT_HDR_SIZE + 255];
 
 /* USER CODE BEGIN PV */
+
 
 /* USER CODE END PV */
 
@@ -100,6 +102,7 @@ static void Init_Rtc(void);
 __WEAK void APP_BLE_Init(void);
 
 /* USER CODE BEGIN PFP */
+static void PVD_Config(void);
 
 /* USER CODE END PFP */
 
@@ -349,6 +352,7 @@ static void appe_Tl_Init(void)
   TL_MM_Init(&tl_mm_config);
 
   TL_Enable();
+  LS_Flash_Init();
 
   return;
 }
@@ -540,6 +544,7 @@ static void APPE_SysEvtReadyProcessing(void * pPayload)
 
   return;
 }
+
 
 /*************************************************************
  *

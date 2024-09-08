@@ -37,6 +37,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/LS_HR_RTOS.ioc</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/EEPROM_Emul</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/EEPROM_Emul</locationURI>
+		</link>
+		<link>
 			<name>Utilities/stm32_lpm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Utilities/lpm/tiny_lpm/stm32_lpm.c</locationURI>

@@ -27,11 +27,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#ifdef DUALCORE_FLASH_SHARING
+#include "stm32wbxx_hal_hsem.h"
+#endif
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+ void FLASH_IRQHandler(void);
 
 /* USER CODE END ET */
 

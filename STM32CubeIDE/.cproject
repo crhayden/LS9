@@ -66,6 +66,9 @@
 									<listOptionValue builtIn="false" value="../../Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="../Application/User/Core/Devices"/>
 									<listOptionValue builtIn="false" value="../Application/User/Core/LS_3rd_Party"/>
+									<listOptionValue builtIn="false" value="../../Middlewares/EEPROM_Emul/Core"/>
+									<listOptionValue builtIn="false" value="../../Middlewares/EEPROM_Emul/Porting/STM32WB"/>
+									<listOptionValue builtIn="false" value="../Application/User/Core/Flash"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1828388169" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -199,4 +202,12 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/LS_HR_RTOS"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/LS_HR_RTOS"/>
+		</configuration>
+	</storageModule>
 </cproject>

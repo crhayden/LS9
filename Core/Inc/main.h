@@ -33,6 +33,7 @@ extern "C" {
 #include "app_entry.h"
 #include "app_common.h"
 #include "cmsis_os.h"
+#include "eeprom_emul.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
