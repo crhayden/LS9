@@ -221,14 +221,14 @@ PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t
 static BleApplicationContext_t BleApplicationContext;
 static uint16_t AdvIntervalMin, AdvIntervalMax;
 
-static const char a_LocalName[] = {AD_TYPE_COMPLETE_LOCAL_NAME ,'S','e','r','i','a', 'l','_','N','u', 'm'};
+static const char a_LocalName[] = {AD_TYPE_COMPLETE_LOCAL_NAME ,'L','o','d','e','S', 't','a','r','9'};
 /**
  * Advertising Data
  */
-uint8_t a_AdvData[14] =
+uint8_t a_AdvData[15] =
 {
   2, AD_TYPE_TX_POWER_LEVEL, 0 /* -0.15dBm */, /* Transmission Power */
-  10, AD_TYPE_COMPLETE_LOCAL_NAME, 'S', 'e', 'r', 'i', 'a', 'l', 'N', 'u', 'm',  /* Complete name */
+  11, AD_TYPE_COMPLETE_LOCAL_NAME, 'L','o','d','e','S', 't','a','r','9'  /* Complete name */
 
 };
 /* USER CODE BEGIN PV */

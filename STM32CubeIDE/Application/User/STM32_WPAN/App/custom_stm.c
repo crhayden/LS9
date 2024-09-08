@@ -109,11 +109,11 @@ do {\
     uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
 
-#define COPY_LS_SERVICE_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0x4c,0x54,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
-#define COPY_BATTERY_STATUS_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x4c,0x55,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_WEAPON_LOCKING_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x4c,0x56,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_TX_DATA_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x4c,0x57,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_RX_DATA_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x4c,0x58,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_LS_SERVICE_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4c,0x54,0x53,0x31,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
+#define COPY_BATTERY_STATUS_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x31,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_WEAPON_LOCKING_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x32,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_TX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x33,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_RX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x34,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
 
@@ -215,7 +215,7 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
           break;
 
-		case ACI_GATT_NOTIFICATION_COMPLETE_VSEVT_CODE:
+    case ACI_GATT_NOTIFICATION_COMPLETE_VSEVT_CODE:
         {
           /* USER CODE BEGIN EVT_BLUE_GATT_NOTIFICATION_COMPLETE_BEGIN */
 
@@ -380,7 +380,7 @@ void SVCCTL_InitCustomSvc(void)
   ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
                           UUID_TYPE_128, &uuid,
                           SizeTx_Data,
-                          CHAR_PROP_NONE,
+                          CHAR_PROP_READ,
                           ATTR_PERMISSION_NONE,
                           GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
@@ -406,7 +406,7 @@ void SVCCTL_InitCustomSvc(void)
   ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
                           UUID_TYPE_128, &uuid,
                           SizeRx_Data,
-                          CHAR_PROP_NONE,
+                          CHAR_PROP_WRITE_WITHOUT_RESP,
                           ATTR_PERMISSION_NONE,
                           GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
@@ -661,7 +661,7 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
       /* USER CODE BEGIN Updated_Length_Service_1_Char_1*/
 
       /* USER CODE END Updated_Length_Service_1_Char_1*/
-	  Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomBattery_StatusHdle, SizeBattery_Status, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomBattery_StatusHdle, SizeBattery_Status, pPayload);
 
       break;
 
@@ -669,7 +669,7 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
       /* USER CODE BEGIN Updated_Length_Service_1_Char_2*/
 
       /* USER CODE END Updated_Length_Service_1_Char_2*/
-	  Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomWeapon_LockingHdle, SizeWeapon_Locking, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomWeapon_LockingHdle, SizeWeapon_Locking, pPayload);
 
       break;
 
@@ -677,7 +677,7 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
       /* USER CODE BEGIN Updated_Length_Service_1_Char_3*/
 
       /* USER CODE END Updated_Length_Service_1_Char_3*/
-	  Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomTx_DataHdle, SizeTx_Data, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomTx_DataHdle, SizeTx_Data, pPayload);
 
       break;
 
@@ -685,7 +685,7 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
       /* USER CODE BEGIN Updated_Length_Service_1_Char_4*/
 
       /* USER CODE END Updated_Length_Service_1_Char_4*/
-	  Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomRx_DataHdle, SizeRx_Data, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomRx_DataHdle, SizeRx_Data, pPayload);
 
       break;
 
