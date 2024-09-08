@@ -347,11 +347,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbxx_it.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/app_ble.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/Target/hw_ipcc.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/hw_ipcc.c</locationURI>
