@@ -102,7 +102,6 @@ static void Init_Rtc(void);
 __WEAK void APP_BLE_Init(void);
 
 /* USER CODE BEGIN PFP */
-static void PVD_Config(void);
 
 /* USER CODE END PFP */
 

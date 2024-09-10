@@ -46,7 +46,7 @@ const osThreadAttr_t motorTask_attributes = {
 ///
 /// @return void
 ///
-static void StartMotorTask(void * argument) {
+static void MotorTask(void * argument) {
 	for (;;) {
 		osDelay(500);
 	}
@@ -62,7 +62,7 @@ static void StartMotorTask(void * argument) {
 ///
 ////////////////////////////////////////////////////////////////////////////////
 void LS_Motor_DRV8823_Init() {
-	  motorTaskHandle = osThreadNew(StartMotorTask, NULL, &motorTask_attributes);
+	  motorTaskHandle = osThreadNew(MotorTask, NULL, &motorTask_attributes);
 }
 ////////////////////////////////////////////////////////////////////////////////
 ///

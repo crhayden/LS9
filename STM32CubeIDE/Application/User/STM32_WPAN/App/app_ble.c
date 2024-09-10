@@ -170,7 +170,7 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-#define APPBLE_GAP_DEVICE_NAME_LENGTH 7
+#define APPBLE_GAP_DEVICE_NAME_LENGTH 4
 #define FAST_ADV_TIMEOUT               (30*1000*1000/CFG_TS_TICK_VAL) /**< 30s */
 #define INITIAL_ADV_TIMEOUT            (60*1000*1000/CFG_TS_TICK_VAL) /**< 60s */
 
@@ -269,7 +269,7 @@ static void Ble_Tl_Init(void);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress(void);
 static void Adv_Request(APP_BLE_ConnStatus_t NewStatus);
-static void Add_Advertisment_Service_UUID(uint16_t servUUID);
+//static void Add_Advertisment_Service_UUID(uint16_t servUUID);
 static void Adv_Mgr(void);
 static void AdvUpdateProcess(void *argument);
 static void Adv_Update(void);
@@ -803,7 +803,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   if (role > 0)
   {
-    const char *name = "HRSTM";
+    const char *name = "LS9";
     ret = aci_gap_init(role,
                        CFG_PRIVACY,
                        APPBLE_GAP_DEVICE_NAME_LENGTH,
@@ -1068,17 +1068,17 @@ const uint8_t* BleGetBdAddress(void)
  *SPECIFIC FUNCTIONS
  *
  *************************************************************/
-static void Add_Advertisment_Service_UUID(uint16_t servUUID)
-{
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen] =
-      (uint8_t) (servUUID & 0xFF);
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen++;
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen] =
-      (uint8_t) (servUUID >> 8) & 0xFF;
-  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen++;
-
-  return;
-}
+//static void Add_Advertisment_Service_UUID(uint16_t servUUID)
+//{
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen] =
+//      (uint8_t) (servUUID & 0xFF);
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen++;
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUID[BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen] =
+//      (uint8_t) (servUUID >> 8) & 0xFF;
+//  BleApplicationContext.BleApplicationContext_legacy.advtServUUIDlen++;
+//
+//  return;
+//}
 
 static void Adv_Mgr(void)
 {
