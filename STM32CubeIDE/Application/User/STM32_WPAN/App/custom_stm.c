@@ -30,7 +30,8 @@
 typedef struct{
   uint16_t  CustomLs_ServiceHdle;                    /**< LS_Service handle */
   uint16_t  CustomBattery_StatusHdle;                  /**< Battery_Status handle */
-  uint16_t  CustomWeapon_LockingHdle;                  /**< Weapon_Locking handle */
+  uint16_t  CustomWeapon_StatusHdle;                  /**< Weapon_Status handle */
+  uint16_t  CustomWeapon_ControlHdle;                  /**< Weapon_Control handle */
   uint16_t  CustomTx_DataHdle;                  /**< TX_Data handle */
   uint16_t  CustomRx_DataHdle;                  /**< RX_Data handle */
 /* USER CODE BEGIN Context */
@@ -68,7 +69,8 @@ extern uint16_t Connection_Handle;
 
 /* Private variables ---------------------------------------------------------*/
 uint16_t SizeBattery_Status = 1;
-uint16_t SizeWeapon_Locking = 1;
+uint16_t SizeWeapon_Status  = 1;
+uint16_t SizeWeapon_Control = 1;
 uint16_t SizeTx_Data = 1;
 uint16_t SizeRx_Data = 1;
 
@@ -111,9 +113,10 @@ do {\
 
 #define COPY_LS_SERVICE_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4c,0x54,0x53,0x31,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
 #define COPY_BATTERY_STATUS_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x31,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_WEAPON_LOCKING_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x32,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_TX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x33,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_RX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x34,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_WEAPON_STATUS_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x32,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_WEAPON_CONTROL_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x33,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_TX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x34,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_RX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x35,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
 
@@ -148,110 +151,82 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
       switch (blecore_evt->ecode)
       {
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
-          /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
 
-          /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blecore_evt->data;
-          if (attribute_modified->Attr_Handle == (CustomContext.CustomWeapon_LockingHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+
+          if (attribute_modified->Attr_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
+            Notification.Custom_Evt_Opcode = CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT;
+            Notification.DataTransfered.data[0] = attribute_modified->Attr_Data[0];
             return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            Custom_STM_App_Notification(&Notification);
+          } else if (attribute_modified->Attr_Handle == (CustomContext.CustomRx_DataHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET)) {
 
-            /* USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-          } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomWeapon_LockingHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-          /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-
-          /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
+            Notification.DataTransfered.Length = attribute_modified->Attr_Data_Length;
+            memcpy(&Notification.DataTransfered.data[0], &attribute_modified->Attr_Data[0], attribute_modified->Attr_Data_Length);
+            return_value = SVCCTL_EvtAckFlowEnable;
+            Custom_STM_App_Notification(&Notification);
+          }
           break;
 
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
-          /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
 
-          /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
           read_req = (aci_gatt_read_permit_req_event_rp0*)blecore_evt->data;
           if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-
-            /*USER CODE END CUSTOM_STM_Service_1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
+            //aci_gatt_allow_read(read_req->Connection_Handle);
             aci_gatt_allow_read(read_req->Connection_Handle);
-            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
+            uint8_t testVal = 5;
+            Custom_STM_App_Update_Char(CUSTOM_STM_BATTERY_STATUS, &testVal);
 
-            /*USER CODE END CUSTOM_STM_Service_1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-          else if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_LockingHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          else if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-
-            /*USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
             aci_gatt_allow_read(read_req->Connection_Handle);
-            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
 
-            /*USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
-          } /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_LockingHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-          /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
 
-          /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
+          } /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+
           break;
 
         case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
-          /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
-          /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
           write_perm_req = (aci_gatt_write_permit_req_event_rp0*)blecore_evt->data;
-          if (write_perm_req->Attribute_Handle == (CustomContext.CustomWeapon_LockingHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          if (write_perm_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* Allow or reject a write request from a client using aci_gatt_write_resp(...) function */
-            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
 
-            /*USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomWeapon_LockingHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
-          /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
-          /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
           break;
 
     case ACI_GATT_NOTIFICATION_COMPLETE_VSEVT_CODE:
         {
-          /* USER CODE BEGIN EVT_BLUE_GATT_NOTIFICATION_COMPLETE_BEGIN */
 
-          /* USER CODE END EVT_BLUE_GATT_NOTIFICATION_COMPLETE_BEGIN */
           notification_complete = (aci_gatt_notification_complete_event_rp0*)blecore_evt->data;
           Notification.Custom_Evt_Opcode = CUSTOM_STM_NOTIFICATION_COMPLETE_EVT;
           Notification.AttrHandle = notification_complete->Attr_Handle;
           Custom_STM_App_Notification(&Notification);
-          /* USER CODE BEGIN EVT_BLUE_GATT_NOTIFICATION_COMPLETE_END */
 
-          /* USER CODE END EVT_BLUE_GATT_NOTIFICATION_COMPLETE_END */
           break;
         }
 
-        /* USER CODE BEGIN BLECORE_EVT */
 
-        /* USER CODE END BLECORE_EVT */
         default:
-          /* USER CODE BEGIN EVT_DEFAULT */
 
-          /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
 
-      /* USER CODE END EVT_VENDOR*/
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
 
-      /* USER CODE END EVENT_PCKT_CASES*/
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
 
-      /* USER CODE END EVENT_PCKT*/
       break;
   }
 
@@ -291,7 +266,8 @@ void SVCCTL_InitCustomSvc(void)
    * Max_Attribute_Records = 1 + 2*4 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
    * service_max_attribute_record = 1 for LS_Service +
    *                                2 for Battery_Status +
-   *                                2 for Weapon_Locking +
+   *                                2 for Weapon_Status +
+   *                                2 for Weapon_Control +
    *                                2 for TX_Data +
    *                                2 for RX_Data +
    *                              = 9
@@ -299,7 +275,7 @@ void SVCCTL_InitCustomSvc(void)
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 9;
+  max_attr_record = 12;
 
   /* USER CODE BEGIN SVCCTL_InitService */
   /* max_attr_record to be updated if descriptors have been added */
@@ -328,9 +304,9 @@ void SVCCTL_InitCustomSvc(void)
   ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
                           UUID_TYPE_128, &uuid,
                           SizeBattery_Status,
-                          CHAR_PROP_READ,
+                          CHAR_PROP_READ ,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(CustomContext.CustomBattery_StatusHdle));
@@ -348,27 +324,48 @@ void SVCCTL_InitCustomSvc(void)
 
   /* USER CODE END SVCCTL_Init_Service1_Char1 */
   /**
-   *  Weapon_Locking
+   *  Weapon_Status
    */
-  COPY_WEAPON_LOCKING_UUID(uuid.Char_UUID_128);
+  COPY_WEAPON_STATUS_UUID(uuid.Char_UUID_128);
   ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
                           UUID_TYPE_128, &uuid,
-                          SizeWeapon_Locking,
-                          CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RESP,
+                          SizeWeapon_Status,
+                          CHAR_PROP_READ ,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+						  GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
-                          &(CustomContext.CustomWeapon_LockingHdle));
+                          &(CustomContext.CustomWeapon_StatusHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : WEAPON_LOCKING, error code: 0x%x \n\r", ret);
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : WEAPON_Status, error code: 0x%x \n\r", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: aci_gatt_add_char command   : WEAPON_LOCKING \n\r");
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : WEAPON_Status \n\r");
   }
 
+  /**
+   *  Weapon_Control
+   */
+  COPY_WEAPON_CONTROL_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
+                          UUID_TYPE_128, &uuid,
+                          SizeWeapon_Control,
+                          CHAR_PROP_WRITE_WITHOUT_RESP,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE ,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomWeapon_ControlHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : WEAPON_CONTROL, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : WEAPON_CONTROL \n\r");
+  }
   /* USER CODE BEGIN SVCCTL_Init_Service1_Char2 */
   /* Place holder for Characteristic Descriptors */
 
@@ -382,7 +379,7 @@ void SVCCTL_InitCustomSvc(void)
                           SizeTx_Data,
                           CHAR_PROP_READ,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
                           CHAR_VALUE_LEN_VARIABLE,
                           &(CustomContext.CustomTx_DataHdle));
@@ -406,9 +403,9 @@ void SVCCTL_InitCustomSvc(void)
   ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
                           UUID_TYPE_128, &uuid,
                           SizeRx_Data,
-                          CHAR_PROP_WRITE_WITHOUT_RESP,
+                          CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_NOTIFY,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE ,//| GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
                           CHAR_VALUE_LEN_VARIABLE,
                           &(CustomContext.CustomRx_DataHdle));
@@ -468,19 +465,19 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_1*/
       break;
 
-    case CUSTOM_STM_WEAPON_LOCKING:
+    case CUSTOM_STM_WEAPON_CONTROL:
       ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomWeapon_LockingHdle,
+                                       CustomContext.CustomWeapon_ControlHdle,
                                        0, /* charValOffset */
-                                       SizeWeapon_Locking, /* charValueLen */
+                                       SizeWeapon_Control, /* charValueLen */
                                        (uint8_t *)  pPayload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value WEAPON_LOCKING command, result : 0x%x \n\r", ret);
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value WEAPON_CONTROL command, result : 0x%x \n\r", ret);
       }
       else
       {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_LOCKING command\n\r");
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_CONTROL command\n\r");
       }
       /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_2*/
 
@@ -572,19 +569,19 @@ tBleStatus Custom_STM_App_Update_Char_Variable_Length(Custom_STM_Char_Opcode_t C
       /* USER CODE END Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_1*/
       break;
 
-    case CUSTOM_STM_WEAPON_LOCKING:
+    case CUSTOM_STM_WEAPON_CONTROL:
       ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomWeapon_LockingHdle,
+                                       CustomContext.CustomWeapon_ControlHdle,
                                        0, /* charValOffset */
                                        size, /* charValueLen */
                                        (uint8_t *)  pPayload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value WEAPON_LOCKING command, result : 0x%x \n\r", ret);
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value WEAPON_CONTROL command, result : 0x%x \n\r", ret);
       }
       else
       {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_LOCKING command\n\r");
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_CONTROL command\n\r");
       }
       /* USER CODE BEGIN Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_2*/
 
@@ -665,11 +662,11 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
 
       break;
 
-    case CUSTOM_STM_WEAPON_LOCKING:
+    case CUSTOM_STM_WEAPON_CONTROL:
       /* USER CODE BEGIN Updated_Length_Service_1_Char_2*/
 
       /* USER CODE END Updated_Length_Service_1_Char_2*/
-    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomWeapon_LockingHdle, SizeWeapon_Locking, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomWeapon_ControlHdle, SizeWeapon_Control, pPayload);
 
       break;
 

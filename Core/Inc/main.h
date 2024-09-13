@@ -42,6 +42,18 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum {
+    MOTOR_LOCK    = 1,
+    MOTOR_UNLOCK,
+    MOTOR_IS_LOCK,
+} app_event_t;
+
+typedef struct {
+  app_event_t type;
+  uint8_t motor_id; // motor id
+  int16_t num_confs; // num_confs
+  uint32_t degrees; // move motor x degrees
+} app_message_t;
 
 /* USER CODE END ET */
 

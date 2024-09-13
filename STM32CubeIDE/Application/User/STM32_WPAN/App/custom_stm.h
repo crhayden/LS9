@@ -36,7 +36,8 @@ typedef enum
 {
   /* LS_Service */
   CUSTOM_STM_BATTERY_STATUS,
-  CUSTOM_STM_WEAPON_LOCKING,
+  CUSTOM_STM_WEAPON_STATUS,
+  CUSTOM_STM_WEAPON_CONTROL,
   CUSTOM_STM_TX_DATA,
   CUSTOM_STM_RX_DATA,
 } Custom_STM_Char_Opcode_t;
@@ -45,10 +46,13 @@ typedef enum
 {
   /* Battery_Status */
   CUSTOM_STM_BATTERY_STATUS_READ_EVT,
-  /* Weapon_Locking */
-  CUSTOM_STM_WEAPON_LOCKING_READ_EVT,
-  CUSTOM_STM_WEAPON_LOCKING_WRITE_NO_RESP_EVT,
+  /* Weapon_Status */
+  CUSTOM_STM_WEAPON_STATUS_READ_EVT,
+  /* Weapon_Control */
+  CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT,
   /* TX_Data */
+  CUSTOM_STM_TXDATA_WRITE_NO_RESP_EVT,
+  CUSTOM_STM_RXDATA_WRITE_NO_RESP_EVT,
   /* RX_Data */
   CUSTOM_STM_NOTIFICATION_COMPLETE_EVT,
 
@@ -57,8 +61,8 @@ typedef enum
 
 typedef struct
 {
-  uint8_t * pPayload;
-  uint8_t   Length;
+  uint8_t 	data[(BLE_EVT_MAX_PARAM_LEN - 2) - 8];
+  uint16_t	Length;
 } Custom_STM_Data_t;
 
 typedef struct
@@ -76,7 +80,8 @@ typedef struct
 
 /* Exported constants --------------------------------------------------------*/
 extern uint16_t SizeBattery_Status;
-extern uint16_t SizeWeapon_Locking;
+extern uint16_t SizeWeapon_Status;
+extern uint16_t SizeWeapon_Control;
 extern uint16_t SizeTx_Data;
 extern uint16_t SizeRx_Data;
 
@@ -91,6 +96,11 @@ extern uint16_t SizeRx_Data;
 
 /* Exported macros -----------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define BATTERY_STATUS_HANDLE 14
+#define WEAPON_STATUS_HANDLE  16
+#define WEAPON_CONTROL_HANDLE 18
+#define TX_DATA_HANDLE  20
+#define RX_DATA_HANDLE  22
 
 /* USER CODE END EM */
 
