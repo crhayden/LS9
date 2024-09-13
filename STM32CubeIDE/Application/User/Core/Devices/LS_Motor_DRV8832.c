@@ -7,6 +7,7 @@
  */
 
 #include <LS_Motor_DRV8823.h>
+#include "LS_Battery.h"
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           Internal Constants

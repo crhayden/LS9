@@ -177,14 +177,16 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
             return_value = SVCCTL_EvtAckFlowEnable;
             //aci_gatt_allow_read(read_req->Connection_Handle);
             aci_gatt_allow_read(read_req->Connection_Handle);
-            uint8_t testVal = 5;
-            Custom_STM_App_Update_Char(CUSTOM_STM_BATTERY_STATUS, &testVal);
+            uint8_t batVal = LS_Battery_GetBatteryVoltage();
+            Custom_STM_App_Update_Char(CUSTOM_STM_BATTERY_STATUS, &batVal);
 
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           else if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             aci_gatt_allow_read(read_req->Connection_Handle);
+            uint8_t isLocked = LS_Battery_isTrigLocked();
+            Custom_STM_App_Update_Char(CUSTOM_STM_WEAPON_STATUS, &isLocked);
 
 
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
@@ -465,9 +467,28 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_1*/
       break;
 
+    case CUSTOM_STM_WEAPON_STATUS:
+      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
+                                       CustomContext.CustomWeapon_StatusHdle,
+                                       0, /* charValOffset */
+									   SizeWeapon_Status, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value BATTERY_STATUS command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value BATTERY_STATUS command\n\r");
+      }
+      /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_1*/
+
+      /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_1*/
+      break;
+
     case CUSTOM_STM_WEAPON_CONTROL:
       ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomWeapon_ControlHdle,
+                                       CustomContext.CustomWeapon_StatusHdle,
                                        0, /* charValOffset */
                                        SizeWeapon_Control, /* charValueLen */
                                        (uint8_t *)  pPayload);

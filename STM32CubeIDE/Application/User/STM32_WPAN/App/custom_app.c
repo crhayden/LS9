@@ -76,7 +76,7 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
 
     /* LS_Service */
     case CUSTOM_STM_BATTERY_STATUS_READ_EVT:
-
+      
       break;
 
     case CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT:
