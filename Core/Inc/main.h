@@ -59,6 +59,7 @@ typedef struct {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+extern ADC_HandleTypeDef hadc1;
 
 /* USER CODE END EC */
 
