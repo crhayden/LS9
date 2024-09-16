@@ -74,9 +74,17 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
   switch (pNotification->Custom_Evt_Opcode)
   {
 
-    /* LS_Service */
+    /* FireArm */
     case CUSTOM_STM_BATTERY_STATUS_READ_EVT:
-      
+      /* USER CODE BEGIN CUSTOM_STM_BATTERY_STATUS_READ_EVT */
+
+      /* USER CODE END CUSTOM_STM_BATTERY_STATUS_READ_EVT */
+      break;
+
+    case CUSTOM_STM_WEAPON_STATUS_READ_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_WEAPON_STATUS_READ_EVT */
+
+      /* USER CODE END CUSTOM_STM_WEAPON_STATUS_READ_EVT */
       break;
 
     case CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT:
@@ -92,14 +100,41 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
             //Error_Handler();
         }
 
+    /* DeviceLock */
+    case CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT */
+
+      /* USER CODE END CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT */
+      break;
+
+    case CUSTOM_STM_PIN_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_PIN_WRITE_NO_RESP_EVT */
+
+      /* USER CODE END CUSTOM_STM_PIN_WRITE_NO_RESP_EVT */
+      break;
+
+    case CUSTOM_STM_STATE_READ_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_STATE_READ_EVT */
+
+      /* USER CODE END CUSTOM_STM_STATE_READ_EVT */
+      break;
+
+    case CUSTOM_STM_PIN_STATUS_READ_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_PIN_STATUS_READ_EVT */
+
+      /* USER CODE END CUSTOM_STM_PIN_STATUS_READ_EVT */
       break;
 
     case CUSTOM_STM_NOTIFICATION_COMPLETE_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
 
+      /* USER CODE END CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
       break;
 
     default:
+      /* USER CODE BEGIN CUSTOM_STM_App_Notification_default */
 
+      /* USER CODE END CUSTOM_STM_App_Notification_default */
       break;
   }
 

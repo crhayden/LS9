@@ -35,12 +35,15 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 typedef enum
 {
-  /* LS_Service */
+  /* FireArm */
   CUSTOM_STM_BATTERY_STATUS,
   CUSTOM_STM_WEAPON_STATUS,
   CUSTOM_STM_WEAPON_CONTROL,
-  CUSTOM_STM_TX_DATA,
-  CUSTOM_STM_RX_DATA,
+  /* DeviceLock */
+  CUSTOM_STM_ACTION,
+  CUSTOM_STM_PIN,
+  CUSTOM_STM_STATE,
+  CUSTOM_STM_PIN_STATUS,
 } Custom_STM_Char_Opcode_t;
 
 typedef enum
@@ -51,10 +54,15 @@ typedef enum
   CUSTOM_STM_WEAPON_STATUS_READ_EVT,
   /* Weapon_Control */
   CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT,
-  /* TX_Data */
-  CUSTOM_STM_TXDATA_WRITE_NO_RESP_EVT,
-  CUSTOM_STM_RXDATA_WRITE_NO_RESP_EVT,
-  /* RX_Data */
+  /* Action */
+  CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT,
+  /* Pin */
+  CUSTOM_STM_PIN_WRITE_NO_RESP_EVT,
+  /* State */
+  CUSTOM_STM_STATE_READ_EVT,
+  /* Pin_Status */
+  CUSTOM_STM_PIN_STATUS_READ_EVT,
+
   CUSTOM_STM_NOTIFICATION_COMPLETE_EVT,
 
   CUSTOM_STM_BOOT_REQUEST_EVT
@@ -83,8 +91,10 @@ typedef struct
 extern uint16_t SizeBattery_Status;
 extern uint16_t SizeWeapon_Status;
 extern uint16_t SizeWeapon_Control;
-extern uint16_t SizeTx_Data;
-extern uint16_t SizeRx_Data;
+extern uint16_t SizeAction;
+extern uint16_t SizePin;
+extern uint16_t SizeState;
+extern uint16_t SizePin_Status;
 
 /* USER CODE BEGIN EC */
 

@@ -28,12 +28,15 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct{
-  uint16_t  CustomLs_ServiceHdle;                    /**< LS_Service handle */
-  uint16_t  CustomBattery_StatusHdle;                  /**< Battery_Status handle */
-  uint16_t  CustomWeapon_StatusHdle;                  /**< Weapon_Status handle */
-  uint16_t  CustomWeapon_ControlHdle;                  /**< Weapon_Control handle */
-  uint16_t  CustomTx_DataHdle;                  /**< TX_Data handle */
-  uint16_t  CustomRx_DataHdle;                  /**< RX_Data handle */
+  uint16_t  CustomFirearmHdle;              /**< FireArm handle */
+  uint16_t  CustomBattery_StatusHdle;       /**< Battery_Status handle */
+  uint16_t  CustomWeapon_StatusHdle;        /**< Weapon_Status handle */
+  uint16_t  CustomWeapon_ControlHdle;       /**< Weapon_Control handle */
+  uint16_t  CustomDevicelockHdle;           /**< DeviceLock handle */
+  uint16_t  CustomActionHdle;               /**< Action handle */
+  uint16_t  CustomPinHdle;                  /**< Pin handle */
+  uint16_t  CustomStateHdle;                /**< State handle */
+  uint16_t  CustomPin_StatusHdle;           /**< Pin_Status handle */
 /* USER CODE BEGIN Context */
   /* Place holder for Characteristic Descriptors Handle*/
 
@@ -69,10 +72,12 @@ extern uint16_t Connection_Handle;
 
 /* Private variables ---------------------------------------------------------*/
 uint16_t SizeBattery_Status = 1;
-uint16_t SizeWeapon_Status  = 1;
+uint16_t SizeWeapon_Status = 1;
 uint16_t SizeWeapon_Control = 1;
-uint16_t SizeTx_Data = 1;
-uint16_t SizeRx_Data = 1;
+uint16_t SizeAction = 1;
+uint16_t SizePin = 1;
+uint16_t SizeState = 1;
+uint16_t SizePin_Status = 1;
 
 /**
  * START of Section BLE_DRIVER_CONTEXT
@@ -110,14 +115,17 @@ do {\
     uuid_struct[8] = uuid_8; uuid_struct[9] = uuid_9; uuid_struct[10] = uuid_10; uuid_struct[11] = uuid_11; \
     uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
+                                                                        
+#define COPY_FIREARM_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x45,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_BATTERY_STATUS_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x46,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_WEAPON_STATUS_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x47,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_WEAPON_CONTROL_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x48,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
 
-#define COPY_LS_SERVICE_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4c,0x54,0x53,0x31,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
-#define COPY_BATTERY_STATUS_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x31,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_WEAPON_STATUS_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x32,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_WEAPON_CONTROL_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x33,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_TX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x34,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_RX_DATA_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4c,0x54,0x43,0x35,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-
+#define COPY_DEVICELOCK_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x49,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_ACTION_UUID(uuid_struct)           COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4A,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_PIN_UUID(uuid_struct)              COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4B,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_STATE_UUID(uuid_struct)            COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4C,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_PIN_STATUS_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4D,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
 /* USER CODE BEGIN PF */
 
 /* USER CODE END PF */
@@ -160,13 +168,7 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
             Notification.DataTransfered.data[0] = attribute_modified->Attr_Data[0];
             return_value = SVCCTL_EvtAckFlowEnable;
             Custom_STM_App_Notification(&Notification);
-          } else if (attribute_modified->Attr_Handle == (CustomContext.CustomRx_DataHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET)) {
-
-            Notification.DataTransfered.Length = attribute_modified->Attr_Data_Length;
-            memcpy(&Notification.DataTransfered.data[0], &attribute_modified->Attr_Data[0], attribute_modified->Attr_Data_Length);
-            return_value = SVCCTL_EvtAckFlowEnable;
-            Custom_STM_App_Notification(&Notification);
-          }
+          } 
           break;
 
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
@@ -270,26 +272,24 @@ void SVCCTL_InitCustomSvc(void)
    *                                2 for Battery_Status +
    *                                2 for Weapon_Status +
    *                                2 for Weapon_Control +
-   *                                2 for TX_Data +
-   *                                2 for RX_Data +
    *                              = 9
    *
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 12;
+  max_attr_record = 7;
 
   /* USER CODE BEGIN SVCCTL_InitService */
   /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 
-  COPY_LS_SERVICE_UUID(uuid.Char_UUID_128);
+  COPY_FIREARM_UUID(uuid.Char_UUID_128);
   ret = aci_gatt_add_service(UUID_TYPE_128,
                              (Service_UUID_t *) &uuid,
                              PRIMARY_SERVICE,
                              max_attr_record,
-                             &(CustomContext.CustomLs_ServiceHdle));
+                             &(CustomContext.CustomFirearmHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
     APP_DBG_MSG("  Fail   : aci_gatt_add_service command: LS_Service, error code: 0x%x \n\r", ret);
@@ -303,7 +303,7 @@ void SVCCTL_InitCustomSvc(void)
    *  Battery_Status
    */
   COPY_BATTERY_STATUS_UUID(uuid.Char_UUID_128);
-  ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
+  ret = aci_gatt_add_char(CustomContext.CustomFirearmHdle,
                           UUID_TYPE_128, &uuid,
                           SizeBattery_Status,
                           CHAR_PROP_READ ,
@@ -329,12 +329,12 @@ void SVCCTL_InitCustomSvc(void)
    *  Weapon_Status
    */
   COPY_WEAPON_STATUS_UUID(uuid.Char_UUID_128);
-  ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
+  ret = aci_gatt_add_char(CustomContext.CustomFirearmHdle,
                           UUID_TYPE_128, &uuid,
                           SizeWeapon_Status,
                           CHAR_PROP_READ ,
                           ATTR_PERMISSION_NONE,
-						  GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+						              GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(CustomContext.CustomWeapon_StatusHdle));
@@ -351,7 +351,7 @@ void SVCCTL_InitCustomSvc(void)
    *  Weapon_Control
    */
   COPY_WEAPON_CONTROL_UUID(uuid.Char_UUID_128);
-  ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
+  ret = aci_gatt_add_char(CustomContext.CustomFirearmHdle,
                           UUID_TYPE_128, &uuid,
                           SizeWeapon_Control,
                           CHAR_PROP_WRITE_WITHOUT_RESP,
@@ -368,62 +368,127 @@ void SVCCTL_InitCustomSvc(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : WEAPON_CONTROL \n\r");
   }
-  /* USER CODE BEGIN SVCCTL_Init_Service1_Char2 */
+
+  max_attr_record = 9;
+  COPY_DEVICELOCK_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_service(UUID_TYPE_128,
+                             (Service_UUID_t *) &uuid,
+                             PRIMARY_SERVICE,
+                             max_attr_record,
+                             &(CustomContext.CustomDevicelockHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_service command: DeviceLock, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_service command: DeviceLock \n\r");
+  }
+
+  /**
+   *  Action
+   */
+  COPY_ACTION_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomDevicelockHdle,
+                          UUID_TYPE_128, &uuid,
+                          SizeAction,
+                          CHAR_PROP_WRITE_WITHOUT_RESP,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomActionHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : ACTION, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : ACTION \n\r");
+  }
+
+  /* USER CODE BEGIN SVCCTL_Init_Service2_Char1 */
   /* Place holder for Characteristic Descriptors */
 
-  /* USER CODE END SVCCTL_Init_Service1_Char2 */
+  /* USER CODE END SVCCTL_Init_Service2_Char1 */
   /**
-   *  TX_Data
+   *  Pin
    */
-  COPY_TX_DATA_UUID(uuid.Char_UUID_128);
-  ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
+  COPY_PIN_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomDevicelockHdle,
                           UUID_TYPE_128, &uuid,
-                          SizeTx_Data,
+                          SizePin,
+                          CHAR_PROP_WRITE_WITHOUT_RESP,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomPinHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : PIN, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : PIN \n\r");
+  }
+
+  /* USER CODE BEGIN SVCCTL_Init_Service2_Char2 */
+  /* Place holder for Characteristic Descriptors */
+
+  /* USER CODE END SVCCTL_Init_Service2_Char2 */
+  /**
+   *  State
+   */
+  COPY_STATE_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomDevicelockHdle,
+                          UUID_TYPE_128, &uuid,
+                          SizeState,
                           CHAR_PROP_READ,
                           ATTR_PERMISSION_NONE,
                           GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
-                          CHAR_VALUE_LEN_VARIABLE,
-                          &(CustomContext.CustomTx_DataHdle));
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomStateHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : TX_DATA, error code: 0x%x \n\r", ret);
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : STATE, error code: 0x%x \n\r", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: aci_gatt_add_char command   : TX_DATA \n\r");
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : STATE \n\r");
   }
 
-  /* USER CODE BEGIN SVCCTL_Init_Service1_Char3 */
+  /* USER CODE BEGIN SVCCTL_Init_Service2_Char3 */
   /* Place holder for Characteristic Descriptors */
 
-  /* USER CODE END SVCCTL_Init_Service1_Char3 */
+  /* USER CODE END SVCCTL_Init_Service2_Char3 */
   /**
-   *  RX_Data
+   *  Pin_Status
    */
-  COPY_RX_DATA_UUID(uuid.Char_UUID_128);
-  ret = aci_gatt_add_char(CustomContext.CustomLs_ServiceHdle,
+  COPY_PIN_STATUS_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomDevicelockHdle,
                           UUID_TYPE_128, &uuid,
-                          SizeRx_Data,
-                          CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_NOTIFY,
+                          SizePin_Status,
+                          CHAR_PROP_READ,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE ,//| GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
-                          CHAR_VALUE_LEN_VARIABLE,
-                          &(CustomContext.CustomRx_DataHdle));
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomPin_StatusHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : RX_DATA, error code: 0x%x \n\r", ret);
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : PIN_STATUS, error code: 0x%x \n\r", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: aci_gatt_add_char command   : RX_DATA \n\r");
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : PIN_STATUS \n\r");
   }
 
-  /* USER CODE BEGIN SVCCTL_Init_Service1_Char4 */
+  /* USER CODE BEGIN SVCCTL_Init_Service2_Char4 */
   /* Place holder for Characteristic Descriptors */
 
-  /* USER CODE END SVCCTL_Init_Service1_Char4 */
+  /* USER CODE END SVCCTL_Init_Service2_Char4 */
 
   /* USER CODE BEGIN SVCCTL_InitCustomSvc_2 */
 
@@ -449,7 +514,7 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
   {
 
     case CUSTOM_STM_BATTERY_STATUS:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
+      ret = aci_gatt_update_char_value(CustomContext.CustomFirearmHdle,
                                        CustomContext.CustomBattery_StatusHdle,
                                        0, /* charValOffset */
                                        SizeBattery_Status, /* charValueLen */
@@ -468,7 +533,7 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       break;
 
     case CUSTOM_STM_WEAPON_STATUS:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
+      ret = aci_gatt_update_char_value(CustomContext.CustomFirearmHdle,
                                        CustomContext.CustomWeapon_StatusHdle,
                                        0, /* charValOffset */
 									   SizeWeapon_Status, /* charValueLen */
@@ -487,7 +552,7 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       break;
 
     case CUSTOM_STM_WEAPON_CONTROL:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
+      ret = aci_gatt_update_char_value(CustomContext.CustomFirearmHdle,
                                        CustomContext.CustomWeapon_StatusHdle,
                                        0, /* charValOffset */
                                        SizeWeapon_Control, /* charValueLen */
@@ -505,43 +570,6 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_2*/
       break;
 
-    case CUSTOM_STM_TX_DATA:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomTx_DataHdle,
-                                       0, /* charValOffset */
-                                       SizeTx_Data, /* charValueLen */
-                                       (uint8_t *)  pPayload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value TX_DATA command, result : 0x%x \n\r", ret);
-      }
-      else
-      {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value TX_DATA command\n\r");
-      }
-      /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_3*/
-
-      /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_3*/
-      break;
-
-    case CUSTOM_STM_RX_DATA:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomRx_DataHdle,
-                                       0, /* charValOffset */
-                                       SizeRx_Data, /* charValueLen */
-                                       (uint8_t *)  pPayload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value RX_DATA command, result : 0x%x \n\r", ret);
-      }
-      else
-      {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value RX_DATA command\n\r");
-      }
-      /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_4*/
-
-      /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_4*/
-      break;
 
     default:
       break;
@@ -572,7 +600,7 @@ tBleStatus Custom_STM_App_Update_Char_Variable_Length(Custom_STM_Char_Opcode_t C
   {
 
     case CUSTOM_STM_BATTERY_STATUS:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
+      ret = aci_gatt_update_char_value(CustomContext.CustomFirearmHdle,
                                        CustomContext.CustomBattery_StatusHdle,
                                        0, /* charValOffset */
                                        size, /* charValueLen */
@@ -591,7 +619,7 @@ tBleStatus Custom_STM_App_Update_Char_Variable_Length(Custom_STM_Char_Opcode_t C
       break;
 
     case CUSTOM_STM_WEAPON_CONTROL:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
+      ret = aci_gatt_update_char_value(CustomContext.CustomFirearmHdle,
                                        CustomContext.CustomWeapon_ControlHdle,
                                        0, /* charValOffset */
                                        size, /* charValueLen */
@@ -608,45 +636,6 @@ tBleStatus Custom_STM_App_Update_Char_Variable_Length(Custom_STM_Char_Opcode_t C
 
       /* USER CODE END Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_2*/
       break;
-
-    case CUSTOM_STM_TX_DATA:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomTx_DataHdle,
-                                       0, /* charValOffset */
-                                       size, /* charValueLen */
-                                       (uint8_t *)  pPayload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value TX_DATA command, result : 0x%x \n\r", ret);
-      }
-      else
-      {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value TX_DATA command\n\r");
-      }
-      /* USER CODE BEGIN Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_3*/
-
-      /* USER CODE END Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_3*/
-      break;
-
-    case CUSTOM_STM_RX_DATA:
-      ret = aci_gatt_update_char_value(CustomContext.CustomLs_ServiceHdle,
-                                       CustomContext.CustomRx_DataHdle,
-                                       0, /* charValOffset */
-                                       size, /* charValueLen */
-                                       (uint8_t *)  pPayload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value RX_DATA command, result : 0x%x \n\r", ret);
-      }
-      else
-      {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value RX_DATA command\n\r");
-      }
-      /* USER CODE BEGIN Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_4*/
-
-      /* USER CODE END Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_4*/
-      break;
-
     default:
       break;
   }
@@ -679,7 +668,7 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
       /* USER CODE BEGIN Updated_Length_Service_1_Char_1*/
 
       /* USER CODE END Updated_Length_Service_1_Char_1*/
-    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomBattery_StatusHdle, SizeBattery_Status, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomFirearmHdle, CustomContext.CustomBattery_StatusHdle, SizeBattery_Status, pPayload);
 
       break;
 
@@ -687,23 +676,7 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
       /* USER CODE BEGIN Updated_Length_Service_1_Char_2*/
 
       /* USER CODE END Updated_Length_Service_1_Char_2*/
-    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomWeapon_ControlHdle, SizeWeapon_Control, pPayload);
-
-      break;
-
-    case CUSTOM_STM_TX_DATA:
-      /* USER CODE BEGIN Updated_Length_Service_1_Char_3*/
-
-      /* USER CODE END Updated_Length_Service_1_Char_3*/
-    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomTx_DataHdle, SizeTx_Data, pPayload);
-
-      break;
-
-    case CUSTOM_STM_RX_DATA:
-      /* USER CODE BEGIN Updated_Length_Service_1_Char_4*/
-
-      /* USER CODE END Updated_Length_Service_1_Char_4*/
-    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomLs_ServiceHdle, CustomContext.CustomRx_DataHdle, SizeRx_Data, pPayload);
+    Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomFirearmHdle, CustomContext.CustomWeapon_ControlHdle, SizeWeapon_Control, pPayload);
 
       break;
 
