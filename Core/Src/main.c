@@ -23,6 +23,7 @@
 #include <LS_Accel_MC3479.h>
 #include <LS_KeyPad.h>
 #include <LS_Battery.h>
+#include <LS_DeviceLock.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -156,6 +157,7 @@ int main(void)
   LS_Motor_DRV8823_Init();
   LS_KeyPad_Init();
   LS_Battery_Init();
+  LS_DeviceLock_Init();
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */

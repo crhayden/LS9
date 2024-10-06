@@ -46,6 +46,7 @@ const osThreadAttr_t keypadTask_attributes = {
 /// @return void
 ///
 static void StartKeypadTask(void * argument) {
+
 	for (;;) {
 		osDelay(500);
 	}

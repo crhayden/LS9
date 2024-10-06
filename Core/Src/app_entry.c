@@ -351,7 +351,7 @@ static void appe_Tl_Init(void)
   TL_MM_Init(&tl_mm_config);
 
   TL_Enable();
-  LS_Flash_Init();
+  //LS_Flash_Init();
 
   return;
 }
