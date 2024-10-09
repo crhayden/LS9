@@ -21,7 +21,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 void LS_FS_WriteU32(uint32_t addr, uint32_t val);
-void LS_FS_ReadU32(uint32_t addr, uint32_t *pVal);
+EE_Status LS_FS_ReadU32(uint32_t addr, uint32_t *pVal);
 ///
 /// Initializes the biometric subsystem
 ///

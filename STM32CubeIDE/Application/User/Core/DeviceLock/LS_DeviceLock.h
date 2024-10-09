@@ -31,7 +31,7 @@
 /// Device lock states
 ///
 typedef enum _LS_DeviceLock_States {
-    LOCKED, 
+    LOCKED = 1, 
     UNLOCKED,   
     DISABLED,   
 } LS_DeviceLock_States;
@@ -39,10 +39,10 @@ typedef enum _LS_DeviceLock_States {
 /// Device lock actions
 ///
 typedef enum _LS_DeviceLock_Actions {
-    aLOCK,
+    aLOCK = 1,
     aUNLOCK,
-    aDISABLE,
     aCHANGEPIN,
+    aDISABLE,
     aNONE,
 } LS_DeviceLock_Actions;
 ////////////////////////////////////////////////////////////////////////////////

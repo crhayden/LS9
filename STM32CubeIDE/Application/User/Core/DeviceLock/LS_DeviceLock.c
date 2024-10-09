@@ -15,22 +15,6 @@
 /// Default pin code
 ///
 #define LS_DEFAULT_PIN_CODE                   0xFFFFFFFF
-///
-/// Device is unlocked from mobile device
-///
-#define LS_DEVICE_LOCK_IS_UNLOCKED            0			      
-///
-/// Device is locked to a mobile device
-///
-#define LS_DEVICE_LOCK_IS_LOCKED              1			      
-///
-/// Pin entered is not valid
-///
-#define LS_DEVICE_LOCK_PINSTATUS_IS_NOT_VALID 0			      
-///
-/// Pin entered is valid
-///
-#define LS_DEVICE_LOCK_PINSTATUS_IS_VALID     1	
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           Internal Constants
@@ -52,7 +36,7 @@ LS_DeviceLock_States lockState = DISABLED;
 ///
 /// Device lock current pin status
 ///
-uint8_t pinStatus = 0;
+uint8_t pinStatus = 1;
 ///
 /// Next intended action
 ///
@@ -130,7 +114,7 @@ static LS_DeviceLock_err _StorePin(uint8_t *pPin) {
 /// @return     LS_DeviceLock_err
 ///
 static LS_DeviceLock_err _CheckPin(uint8_t *pUserCode) {
-    LS_DeviceLock_err   RF_err = NONE;
+    LS_DeviceLock_err   err = NONE;
     uint32_t                exisitingCode;
     //
     // Pin code must be a valid pointer
@@ -147,19 +131,19 @@ static LS_DeviceLock_err _CheckPin(uint8_t *pUserCode) {
         //
         // This device is not locked
         //
-        RF_err = IS_DEFAULT;
+        err = IS_DEFAULT;
     } else if (exisitingCode != userPinCode) {
         //
         // Pin is not a match and the pin is not default so we must be locked to a device. 
         //
-        RF_err = IS_NOTMATCH;
+        err = IS_NOTMATCH;
     } else if (exisitingCode == userPinCode) {
         //
         // Pin is a match
         //
-        RF_err = IS_MATCH;
+        err = IS_MATCH;
     }
-    return RF_err; 
+    return err; 
 }
 ////////////////////////////////////////////////////////////////////////////////
 ///
@@ -181,7 +165,7 @@ void LS_DeviceLock_Action(LS_DeviceLock_Actions action) {
     }
 }
 void LS_DeviceLock_HandleAction(uint8_t *pUserCode) {
-    LS_DeviceLock_err   err = aNONE;
+    LS_DeviceLock_err   err = NONE;
     //
     // Need to make sure device locking is disabled
     //
@@ -202,19 +186,21 @@ void LS_DeviceLock_HandleAction(uint8_t *pUserCode) {
                 } 
             }
             break;
+        case aCHANGEPIN:
+            if (lockState == UNLOCKED) {
+                err = _StorePin(pUserCode);
+                if (err == NONE) {
+                    pinStatus = 2;
+                } else {
+                    pinStatus = 1;
+                }
+            } 
+            break;
         case aDISABLE:
             if (lockState == UNLOCKED) {
                 _ResetPin();
                 lockState = DISABLED;
             }
-            break;
-        case aCHANGEPIN:
-            if (lockState == UNLOCKED) {
-                err = _StorePin(pUserCode);
-                if (err == NONE) {
-                    pinStatus = 1;
-                } 
-            } 
             break;
         default:
             break;
@@ -228,17 +214,21 @@ uint8_t LS_DeviceLock_ReadPinSatus() {
 
 void LS_DeviceLock_Init(){
     //
+	EE_Status ee_status = EE_OK;
     //
     //
     uint32_t dummyPin = 0;
     LS_Flash_Init();
     //LS_FS_WriteU32(_pinCodeAddr, 5555);
-    LS_FS_ReadU32(_pinCodeAddr, &dummyPin);
+    ee_status = LS_FS_ReadU32(_pinCodeAddr, &dummyPin);
     //
-    // If there is a pin set then handle to pin reset counter
+    // if there is no pin, this might be the first time someone has connected to us
+    // and want to setup a pin
     //
-    if (dummyPin == LS_DEFAULT_PIN_CODE) {
+    if (ee_status == EE_NO_DATA || dummyPin == LS_DEFAULT_PIN_CODE) {
         lockState = DISABLED;
+    } else {
+        lockState = LOCKED;
     }
 }
 

@@ -75,7 +75,7 @@ uint16_t SizeBattery_Status = 1;
 uint16_t SizeWeapon_Status = 1;
 uint16_t SizeWeapon_Control = 1;
 uint16_t SizeAction = 1;
-uint16_t SizePin = 1;
+uint16_t SizePin = 4;
 uint16_t SizeState = 1;
 uint16_t SizePin_Status = 1;
 
@@ -146,7 +146,9 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
   aci_gatt_notification_complete_event_rp0    *notification_complete;
   Custom_STM_App_Notification_evt_t     Notification;
   /* USER CODE BEGIN Custom_STM_Event_Handler_1 */
-
+  LS_DeviceLock_States 	lockState 	= DISABLED;
+  LS_DeviceLock_Actions	action		= aNONE;
+  uint8_t pinCode[4] = {0};
   /* USER CODE END Custom_STM_Event_Handler_1 */
 
   return_value = SVCCTL_EvtNotAck;
@@ -161,37 +163,50 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
 
           attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blecore_evt->data;
+          Notification.DataTransfered.data[0] = attribute_modified->Attr_Data[0];
+          return_value = SVCCTL_EvtAckFlowEnable;
 
           if (attribute_modified->Attr_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             Notification.Custom_Evt_Opcode = CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT;
-            Notification.DataTransfered.data[0] = attribute_modified->Attr_Data[0];
-            return_value = SVCCTL_EvtAckFlowEnable;
             Custom_STM_App_Notification(&Notification);
           } 
+          else if (attribute_modified->Attr_Handle == (CustomContext.CustomActionHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            //Notification.Custom_Evt_Opcode = CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT;
+            action = Notification.DataTransfered.data[0];
+            LS_DeviceLock_Action(action);
+          }
+          else if (attribute_modified->Attr_Handle == (CustomContext.CustomPinHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            Notification.Custom_Evt_Opcode = CUSTOM_STM_PIN_WRITE_NO_RESP_EVT;
+            memcpy(&pinCode[0], &attribute_modified->Attr_Data[0], attribute_modified->Attr_Data_Length);
+            LS_DeviceLock_HandleAction(&pinCode[0]); 
+          }
           break;
 
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
 
           read_req = (aci_gatt_read_permit_req_event_rp0*)blecore_evt->data;
+          return_value = SVCCTL_EvtAckFlowEnable;
+          aci_gatt_allow_read(read_req->Connection_Handle);
           if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            //aci_gatt_allow_read(read_req->Connection_Handle);
-            aci_gatt_allow_read(read_req->Connection_Handle);
             uint8_t batVal = LS_Battery_GetBatteryVoltage();
             Custom_STM_App_Update_Char(CUSTOM_STM_BATTERY_STATUS, &batVal);
 
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           else if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            aci_gatt_allow_read(read_req->Connection_Handle);
             uint8_t isLocked = LS_Battery_isTrigLocked();
             Custom_STM_App_Update_Char(CUSTOM_STM_WEAPON_STATUS, &isLocked);
-
-
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+
+		  else if (read_req->Attribute_Handle == (CustomContext.CustomStateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+		  {
+		      lockState = LS_DeviceLock_CheckState();
+		      Custom_STM_App_Update_Char(CUSTOM_STM_STATE, (uint8_t*)&lockState);
+			} /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           break;
 
@@ -540,11 +555,11 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
                                        (uint8_t *)  pPayload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value BATTERY_STATUS command, result : 0x%x \n\r", ret);
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value WEAPON_STATUS command, result : 0x%x \n\r", ret);
       }
       else
       {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value BATTERY_STATUS command\n\r");
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_STATUS command\n\r");
       }
       /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_1*/
 
@@ -564,6 +579,24 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       else
       {
         APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_CONTROL command\n\r");
+      }
+      /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_2*/
+
+      /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_2*/
+      break;
+    case CUSTOM_STM_STATE:
+      ret = aci_gatt_update_char_value(CustomContext.CustomDevicelockHdle,
+                                       CustomContext.CustomStateHdle,
+                                       0, /* charValOffset */
+									   SizeState, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value STATE command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value STATE command\n\r");
       }
       /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_2*/
 

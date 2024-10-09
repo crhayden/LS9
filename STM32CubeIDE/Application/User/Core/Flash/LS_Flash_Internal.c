@@ -102,7 +102,7 @@ void LS_FS_WriteU32(uint32_t addr, uint32_t val) {
 
 
 
-void LS_FS_ReadU32(uint32_t addr, uint32_t *pVal){
+EE_Status LS_FS_ReadU32(uint32_t addr, uint32_t *pVal){
   
   /* If an erasing pages operation has just finished, we set OFF the Erase Activity mechanism seen by CPU2 */
   if (ErasingUpdate == 1)
@@ -114,22 +114,26 @@ void LS_FS_ReadU32(uint32_t addr, uint32_t *pVal){
   /* Wait any cleanup is completed before accessing flash again */
   if (ErasingOnGoing == 1)
   { 
-    return;
+    return ee_status;
   }
     
   /*  Wait for the flash semaphore to be free */    
-  if( HAL_HSEM_IsSemTaken(CFG_HW_FLASH_SEMID) ) return;
-  if(HAL_HSEM_Take(CFG_HW_FLASH_SEMID, HSEM_PROCESS_1) != HAL_OK) return;
+  if( HAL_HSEM_IsSemTaken(CFG_HW_FLASH_SEMID) ) return ee_status;
+  if(HAL_HSEM_Take(CFG_HW_FLASH_SEMID, HSEM_PROCESS_1) != HAL_OK) return ee_status;
   
   /* Unlock the Flash Program Erase controller */
   HAL_FLASH_Unlock();
       
   ee_status|= EE_ReadVariable32bits(addr, pVal);
   
-  if (ee_status != EE_OK) {Error_Handler();}
+  if (ee_status == EE_OK || ee_status == EE_NO_DATA) {
+  } else {
+	  Error_Handler();
+  }
   /* Lock the Flash Program Erase controller and release flash semaphore if needed */
   HAL_FLASH_Lock();
   if(ErasingOnGoing != 1) HAL_HSEM_Release(CFG_HW_FLASH_SEMID, HSEM_PROCESS_1);
+  return ee_status;
   
 }
 
