@@ -8,7 +8,11 @@
 #ifndef SRC_DEVICES_LS_KEYPAD_H_
 #define SRC_DEVICES_LS_KEYPAD_H_
 #include "main.h"
+#include "stdbool.h"
 #include <LS_Flash_Internal.h>
+#include <LS_Motor_DRV8823.h>
+#include <LS_DeviceLock.h>
+#include <stdio.h>
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                              External Data
