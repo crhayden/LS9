@@ -56,7 +56,7 @@ const osThreadAttr_t keypadTask_attributes = {
 ///                           Internal Functions
 ///
 ////////////////////////////////////////////////////////////////////////////////
-static _recordButton(uint8_t val) {
+static void _recordButton(uint8_t val) {
 
 	if (kp_info.index <= NUM_OF_PINCODE_DIGITS-1) {
 		kp_info.keyPadVals[kp_info.index] = val;
@@ -164,7 +164,7 @@ static void StartKeypadTask(void * argument) {
 				        }
 						memset(&kp_info.keyPadVals[0], 0, sizeof(kp_info.keyPadVals));
 						kp_info.index = 0;
-					} else if (kp_info.numFailedAttempts++ == MAX_ALLOWED_FAILED_ATTEMPTS) {
+					} else if (++kp_info.numFailedAttempts == MAX_ALLOWED_FAILED_ATTEMPTS) {
 						kp_info.shouldLockUserOut = true;
 						kp_info.numFailedAttempts = 0;
 						//
@@ -189,7 +189,7 @@ static void StartKeypadTask(void * argument) {
 				        }
 						memset(&kp_info.keyPadVals[0], 0, sizeof(kp_info.keyPadVals));
 						kp_info.index = 0;
-					} else if (kp_info.numFailedAttempts++ == MAX_ALLOWED_FAILED_ATTEMPTS) {
+					} else if (++kp_info.numFailedAttempts == MAX_ALLOWED_FAILED_ATTEMPTS) {
 						kp_info.shouldLockUserOut = true;
 						kp_info.numFailedAttempts = 0;
 						//

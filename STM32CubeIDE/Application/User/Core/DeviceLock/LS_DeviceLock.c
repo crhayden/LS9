@@ -177,6 +177,16 @@ void LS_DeviceLock_HandleAction(uint8_t *pUserCode) {
                     lockState = LOCKED;
                 } 
             }
+            //
+			//  This condition is needed for the keypad. Keypad can only lock or unlock
+            //  It cannot setup or change a pin
+            //
+            else if (lockState == UNLOCKED) {
+                err = _CheckPin(pUserCode);
+                if (err == IS_MATCH) {
+                    lockState = LOCKED;
+                }
+            }
             break; 
         case aUNLOCK:
             if (lockState == LOCKED) {
