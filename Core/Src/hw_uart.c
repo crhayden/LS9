@@ -258,60 +258,60 @@ void HW_UART_DMA_Interrupt_Handler(hw_uart_id_t hw_uart_id)
     return;
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    switch ((uint32_t)huart->Instance)
-    {
-#if (CFG_HW_USART1_ENABLED == 1)
-        case (uint32_t)USART1:
-            if(HW_huart1RxCb)
-            {
-                HW_huart1RxCb();
-            }
-            break;
-#endif
-
-#if (CFG_HW_LPUART1_ENABLED == 1)
-        case (uint32_t)LPUART1:
-            if(HW_hlpuart1RxCb)
-            {
-                HW_hlpuart1RxCb();
-            }
-            break;
-#endif
-
-        default:
-            break;
-    }
-
-    return;
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-    switch ((uint32_t)huart->Instance)
-    {
-#if (CFG_HW_USART1_ENABLED == 1)
-        case (uint32_t)USART1:
-            if(HW_huart1TxCb)
-            {
-                HW_huart1TxCb();
-            }
-            break;
-#endif
-
-#if (CFG_HW_LPUART1_ENABLED == 1)
-        case (uint32_t)LPUART1:
-            if(HW_hlpuart1TxCb)
-            {
-                HW_hlpuart1TxCb();
-            }
-            break;
-#endif
-
-        default:
-            break;
-    }
-
-    return;
-}
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//    switch ((uint32_t)huart->Instance)
+//    {
+//#if (CFG_HW_USART1_ENABLED == 1)
+//        case (uint32_t)USART1:
+//            if(HW_huart1RxCb)
+//            {
+//                HW_huart1RxCb();
+//            }
+//            break;
+//#endif
+//
+//#if (CFG_HW_LPUART1_ENABLED == 1)
+//        case (uint32_t)LPUART1:
+//            if(HW_hlpuart1RxCb)
+//            {
+//                HW_hlpuart1RxCb();
+//            }
+//            break;
+//#endif
+//
+//        default:
+//            break;
+//    }
+//
+//    return;
+//}
+//
+//void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//    switch ((uint32_t)huart->Instance)
+//    {
+//#if (CFG_HW_USART1_ENABLED == 1)
+//        case (uint32_t)USART1:
+//            if(HW_huart1TxCb)
+//            {
+//                HW_huart1TxCb();
+//            }
+//            break;
+//#endif
+//
+//#if (CFG_HW_LPUART1_ENABLED == 1)
+//        case (uint32_t)LPUART1:
+//            if(HW_hlpuart1TxCb)
+//            {
+//                HW_hlpuart1TxCb();
+//            }
+//            break;
+//#endif
+//
+//        default:
+//            break;
+//    }
+//
+//    return;
+//}

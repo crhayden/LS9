@@ -126,7 +126,7 @@ int main(void)
   MX_RNG_Init();
   MX_SPI1_Init();
   MX_RF_Init();
-  MX_USART1_UART_Init();
+  //MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -154,7 +154,7 @@ int main(void)
   /* creation of defaultTask */
   MX_ADC1_Init();
   LS_BM_Lite_Init();
-  LS_Accel_MC3479_Init();
+  //LS_Accel_MC3479_Init();
   LS_Motor_DRV8823_Init();
   LS_KeyPad_Init();
   LS_Battery_Init();
@@ -463,6 +463,7 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
+  HAL_UART_RegisterCallback(&huart1, HAL_UART_TX_COMPLETE_CB_ID, HAL_UART_TxCpltCallback);
 
   /* USER CODE END USART1_Init 2 */
 
@@ -475,13 +476,14 @@ static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA2_Channel4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Channel4_IRQn, 15, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Channel4_IRQn);
+//  HAL_NVIC_SetPriority(DMA2_Channel4_IRQn, 15, 0);
+//  HAL_NVIC_EnableIRQ(DMA2_Channel4_IRQn);
 
 }
 
@@ -503,8 +505,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, BACKSTRAP_Pin
-                          , GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, BIO_RST_Pin
+                          , GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOB, BAT_MEAS_EN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
@@ -520,9 +522,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BACKSTRAP_Pin MB_SW3_Pin MB_SW1_Pin MB_SW2_Pin
+  /*Configure GPIO pins : HALL_EN_Pin MB_SW3_Pin MB_SW1_Pin MB_SW2_Pin
                            BAT_MEAS_EN_Pin */
-  GPIO_InitStruct.Pin = BACKSTRAP_Pin
+  GPIO_InitStruct.Pin = BIO_RST_Pin
                           |BAT_MEAS_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

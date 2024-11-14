@@ -60,6 +60,8 @@ typedef struct {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart1;
+extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE END EC */
 
@@ -79,8 +81,8 @@ void MX_USART1_UART_Init(void);
 /* Private defines -----------------------------------------------------------*/
 #define ACC_IRQ2_Pin GPIO_PIN_8
 #define ACC_IRQ2_GPIO_Port GPIOB
-#define BACKSTRAP_Pin GPIO_PIN_9
-#define BACKSTRAP_GPIO_Port GPIOB
+#define BIO_RST_Pin GPIO_PIN_9
+#define BIO_RST_GPIO_Port GPIOB
 #define LED_B_Pin GPIO_PIN_0
 #define LED_B_GPIO_Port GPIOA
 #define LED_G_Pin GPIO_PIN_1
@@ -111,7 +113,8 @@ void MX_USART1_UART_Init(void);
 #define ACC_IRQ1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define SPI_CS_Pin GPIO_PIN_4
+#define SPI_CS_GPIO_Port GPIOA
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
