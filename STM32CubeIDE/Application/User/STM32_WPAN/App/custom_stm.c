@@ -198,7 +198,7 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           else if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
-            uint8_t isLocked = LS_Battery_isTrigLocked();
+        	motor_states_t isLocked = LS_Motor_GetState();
             Custom_STM_App_Update_Char(CUSTOM_STM_WEAPON_STATUS, &isLocked);
           } /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 

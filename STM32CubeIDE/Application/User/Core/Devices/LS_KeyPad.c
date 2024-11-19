@@ -57,7 +57,6 @@ const osThreadAttr_t keypadTask_attributes = {
 ///
 ////////////////////////////////////////////////////////////////////////////////
 static void _recordButton(uint8_t val) {
-
 	if (kp_info.index <= NUM_OF_PINCODE_DIGITS-1) {
 		kp_info.keyPadVals[kp_info.index] = val;
 	    kp_info.index++;
@@ -133,12 +132,12 @@ static bool _PollButtons() {
 /// @return void
 ///
 static void StartKeypadTask(void * argument) {
-	bool didPressKP = false;
-	app_message_t	evt;
-  	osStatus_t	ret;
+	bool didPressKP = 	false;
+	app_message_t		evt;
+  	osStatus_t			ret;
 	for (;;) {
 		//
-		// 
+		// lock the user out for USER_LOCKOUT_TIMER_VAL seconds if they've entired pin wrong twice 
 		//
 		if (!kp_info.shouldLockUserOut) {
 			//

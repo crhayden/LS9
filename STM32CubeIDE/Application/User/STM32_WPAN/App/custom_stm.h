@@ -28,7 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "LS_Battery.h"
+#include "LS_Motor_DRV8823.h"
 #include <LS_DeviceLock.h>
 /* USER CODE END Includes */
 

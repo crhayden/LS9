@@ -96,6 +96,8 @@ typedef enum
 #define MC3479_REG_ZOUT_LSB         (0x11)
 #define MC3479_REG_ZOUT_MSB         (0x12)
 
+#define MC3479_REG_CHIP_ID_REG      (0x18)
+
 #define MC3479_REG_RANGE_C          (0x20)
 
 #define MC3479_REG_XOFFL            (0x21)
