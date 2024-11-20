@@ -46,8 +46,20 @@ const osThreadAttr_t accelerometerTask_attributes = {
 /// @return void
 ///
 static void StartAccelerometerTask(void * argument) {
+	uint8_t txData[2] = {0x18 | 0x80, 0x00};
+	uint8_t rxByte = 0;
+	HAL_StatusTypeDef status = HAL_OK;
+	HAL_GPIO_WritePin( SPI_CS_GPIO_Port, SPI_CS_Pin, GPIO_PIN_RESET );
+	status= HAL_SPI_TransmitReceive(&hspi1, &txData[0],&rxByte, 3, 100);
+	while(HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_BUSY);
+	HAL_GPIO_WritePin( SPI_CS_GPIO_Port, SPI_CS_Pin, GPIO_PIN_SET );
+	//ACC_MC3479_init(hspi1);
+	if (status != HAL_OK)
+	{
+		Error_Handler();
+	}
 	for (;;) {
-			osDelay(500);
+		osDelay(500);
 	}
 }
 //------------------------------------------------------------------------------
