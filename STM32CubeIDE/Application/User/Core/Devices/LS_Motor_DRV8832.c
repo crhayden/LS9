@@ -158,12 +158,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc1) {
 	if (_getMotorState() == s_LOCKED && adcVoltage > HALL_HIGH_THRESHOLD) {
 		_motorPosition(a_BRAKE);
 		_setMotorState(s_UNLOCKED);
+		HAL_ADC_Stop_IT(hadc1);
 	} else if (_getMotorState() == s_UNLOCKED && adcVoltage < HALL_LOW_THRESHOLD) {
 		_motorPosition(a_BRAKE);
 		_setMotorState(s_LOCKED);
-	} else {
-		//HAL_ADC_Start_IT(&hadc1);
-	}	
+		HAL_ADC_Stop_IT(hadc1);
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////
 ///
