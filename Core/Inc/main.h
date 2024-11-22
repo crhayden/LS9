@@ -109,6 +109,7 @@ extern SPI_HandleTypeDef hspi1;
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define DUNK_TEST_ENABLE 1
 
 /* USER CODE END EM */
 

@@ -82,6 +82,12 @@ static bool _PollButtons() {
                 // Button 1 release event
                 //printf("Button 1 Released!\n");
                 _recordButton('1');
+#if DUNK_TEST_ENABLE
+                osStatus_t	ret;
+                app_message_t	evt;
+                evt.type      = MOTOR_LOCK;
+                ret           = osMessageQueuePut(motorQueueHandle, &evt, 0, 0);
+#endif //DUNK_TEST_ENABLE
  	            b1_pressed = 0; // Mark it as not pressed
 				return true;
             }
@@ -99,6 +105,12 @@ static bool _PollButtons() {
             if (_ReadButton(GPIOB, MB_SW2_Pin)) {
                 //printf("Button 2 Released!\n");
                 _recordButton('2');
+#if DUNK_TEST_ENABLE
+                osStatus_t	ret;
+                app_message_t	evt;
+                evt.type      = MOTOR_UNLOCK;
+                ret           = osMessageQueuePut(motorQueueHandle, &evt, 0, 0);
+#endif //DUNK_TEST_ENABLE
  	            b2_pressed = 0;
 				return true;
             }
@@ -139,6 +151,9 @@ static void StartKeypadTask(void * argument) {
 		//
 		// lock the user out for USER_LOCKOUT_TIMER_VAL seconds if they've entired pin wrong twice 
 		//
+#if DUNK_TEST_ENABLE
+		_PollButtons();
+#else
 		if (!kp_info.shouldLockUserOut) {
 			//
 			// Poll for button presses
@@ -229,6 +244,7 @@ static void StartKeypadTask(void * argument) {
 				kp_info.shouldLockUserOut = false;
 			}
 		}
+#endif //DUNK_TEST_ENABLE
 		osDelay(POLL_INTERVAL);
 	}
 }
