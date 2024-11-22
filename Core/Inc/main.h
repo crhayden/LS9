@@ -34,25 +34,67 @@ extern "C" {
 #include "app_common.h"
 #include "cmsis_os.h"
 #include "eeprom_emul.h"
+#include "stdbool.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+//#include "bmlite_if_callbacks.h"
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 typedef enum {
-    MOTOR_LOCK    = 1,
+    BMLITE_ERROR_OK = 0,
+    BMLITE_ERROR_CAPTURE,
+    BMLITE_ERROR_CAPTURE_START,
+    BMLITE_ERROR_ENROLL_START,
+    BMLITE_ERROR_ENROLL_ADD,
+    BMLITE_ERROR_ENROLL_FINISH,
+    BMLITE_ERROR_WRONG_ANSWER,
+    BMLITE_ERROR_FINGER_WAIT,
+    BMLITE_ERROR_IDENTYFY,
+    BMLITE_ERROR_TEMPLATE_SAVE,
+    BMLITE_ERROR_TEMPLATE_DELETE,
+    BMLITE_ERROR_TEMPLATE_COUNT,
+    BMLITE_ERROR_TEMPLATE_GETIDS,
+    BMLITE_ERROR_IMAGE_EXTRACT,
+    BMLITE_ERROR_IMAGE_GETSIZE,
+    BMLITE_ERROR_IMAGE_GET,
+    BMLITE_ERROR_GETVERSION,
+    BMLITE_ERROR_SW_RESET,
+    BMLITE_ERROR_CALIBRATE,
+    BMLITE_ERROR_CALIBRATE_DELETE,
+    BMLITE_ERROR_SEND_CMD,
+    BMLITE_ERROR_GET_ARG, // 22
+} bmlite_error_t;
+
+//
+// Callbacks
+//
+typedef enum {
+    BIOMETRIC_ON_START_CAPTURE = 23,
+    BIOMETRIC_ON_FINISH_CAPTURE,
+    BIOMETRIC_ON_START_ENROLL,
+    BIOMETRIC_ON_FINISH_ENROLL,
+    BIOMETRIC_ON_START_ENROLLCAPTURE,
+    BIOMETRIC_ON_FINISH_ENROLLCAPTURE,
+    BIOMETRIC_ON_IDENTIFY_START,
+    BIOMETRIC_ON_IDENTIFY_FINISH,
+} bmlite_callback_evt_t;
+
+typedef enum {
+    MOTOR_LOCK = 1,
     MOTOR_UNLOCK,
     MOTOR_IS_LOCK,
 } app_event_t;
 
 typedef struct {
   app_event_t type;
-  uint8_t motor_id; // motor id
-  int16_t num_confs; // num_confs
-  uint32_t degrees; // move motor x degrees
+  bmlite_callback_evt_t cb;
+  bool isBioError;
+  bmlite_error_t bioError;
+  int32_t bioVal;
 } app_message_t;
 
 /* USER CODE END ET */

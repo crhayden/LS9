@@ -39,7 +39,7 @@ fpc_bep_result_t hal_board_init(void *params)
 {
     (void)params;
 
-    uint32_t debugger = (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk);
+    //uint32_t debugger = (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk);
     /* Disable fault exceptions */
     SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
     /* Disable the MPU */
