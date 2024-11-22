@@ -81,6 +81,23 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int _write(int file, char *ptr, int len)
+
+{
+
+/* Implement your write code here, this is used by puts and printf for example */
+
+	int i=0;
+
+	for(i=0 ; i<len ; i++)
+
+	ITM_SendChar((*ptr++));
+
+	return len;
+
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -99,6 +116,7 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+  //printf("start............\n");
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
 
