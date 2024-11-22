@@ -29,10 +29,15 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef struct{
   uint16_t  CustomFirearmHdle;              /**< FireArm handle */
+
   uint16_t  CustomBattery_StatusHdle;       /**< Battery_Status handle */
   uint16_t  CustomWeapon_StatusHdle;        /**< Weapon_Status handle */
   uint16_t  CustomWeapon_ControlHdle;       /**< Weapon_Control handle */
+  uint16_t  CustomBiometric_StatusHdle;     /**< Weapon_Control handle */
+  uint16_t  CustomBiometric_ControlHdle;    /**< Weapon_Control handle */
+
   uint16_t  CustomDevicelockHdle;           /**< DeviceLock handle */
+
   uint16_t  CustomActionHdle;               /**< Action handle */
   uint16_t  CustomPinHdle;                  /**< Pin handle */
   uint16_t  CustomStateHdle;                /**< State handle */
@@ -74,6 +79,8 @@ extern uint16_t Connection_Handle;
 uint16_t SizeBattery_Status = 1;
 uint16_t SizeWeapon_Status = 1;
 uint16_t SizeWeapon_Control = 1;
+uint16_t SizeBiometric_Status = 1;
+uint16_t SizeBiometric_Control = 1;
 uint16_t SizeAction = 1;
 uint16_t SizePin = 4;
 uint16_t SizeState = 1;
@@ -116,10 +123,12 @@ do {\
     uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
                                                                         
-#define COPY_FIREARM_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x45,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
-#define COPY_BATTERY_STATUS_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x46,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
-#define COPY_WEAPON_STATUS_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x47,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
-#define COPY_WEAPON_CONTROL_UUID(uuid_struct)   COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x48,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_FIREARM_UUID(uuid_struct)              COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x45,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_BATTERY_STATUS_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x46,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_WEAPON_STATUS_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x47,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_WEAPON_CONTROL_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x48,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_BIOMETRIC_STATUS_UUID(uuid_struct)     COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x49,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_BIOMETRIC_CONTROL_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x4A,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
 
 #define COPY_DEVICELOCK_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x49,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
 #define COPY_ACTION_UUID(uuid_struct)           COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4A,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
@@ -145,11 +154,9 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
   aci_gatt_read_permit_req_event_rp0    *read_req;
   aci_gatt_notification_complete_event_rp0    *notification_complete;
   Custom_STM_App_Notification_evt_t     Notification;
-  /* USER CODE BEGIN Custom_STM_Event_Handler_1 */
   LS_DeviceLock_States 	lockState 	= DISABLED;
   LS_DeviceLock_Actions	action		= aNONE;
   uint8_t pinCode[4] = {0};
-  /* USER CODE END Custom_STM_Event_Handler_1 */
 
   return_value = SVCCTL_EvtNotAck;
   event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)Event)->data);
@@ -173,7 +180,6 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           } 
           else if (attribute_modified->Attr_Handle == (CustomContext.CustomActionHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
-            //Notification.Custom_Evt_Opcode = CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT;
             action = Notification.DataTransfered.data[0];
             LS_DeviceLock_Action(action);
           }
@@ -195,18 +201,18 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
             uint8_t batVal = LS_Battery_GetBatteryVoltage();
             Custom_STM_App_Update_Char(CUSTOM_STM_BATTERY_STATUS, &batVal);
 
-          } /* if (read_req->Attribute_Handle == (CustomContext.CustomBattery_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          } 
           else if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_StatusHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
         	motor_states_t isLocked = LS_Motor_GetState();
             Custom_STM_App_Update_Char(CUSTOM_STM_WEAPON_STATUS, &isLocked);
-          } /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          } 
 
-		  else if (read_req->Attribute_Handle == (CustomContext.CustomStateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-		  {
-		      lockState = LS_DeviceLock_CheckState();
-		      Custom_STM_App_Update_Char(CUSTOM_STM_STATE, (uint8_t*)&lockState);
-			} /* if (read_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+    		  else if (read_req->Attribute_Handle == (CustomContext.CustomStateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+    		  {
+    		      lockState = LS_DeviceLock_CheckState();
+    		      Custom_STM_App_Update_Char(CUSTOM_STM_STATE, (uint8_t*)&lockState);
+    			} 
 
           break;
 
@@ -216,9 +222,9 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           if (write_perm_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /* Allow or reject a write request from a client using aci_gatt_write_resp(...) function */
+            
 
-          } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomWeapon_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          } 
 
 
           break;
@@ -292,7 +298,7 @@ void SVCCTL_InitCustomSvc(void)
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 7;
+  max_attr_record = 12;
 
   /* USER CODE BEGIN SVCCTL_InitService */
   /* max_attr_record to be updated if descriptors have been added */
@@ -383,6 +389,49 @@ void SVCCTL_InitCustomSvc(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : WEAPON_CONTROL \n\r");
   }
+  /**
+   *  Biometric_Status
+   */
+  COPY_BIOMETRIC_STATUS_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomFirearmHdle,
+                          UUID_TYPE_128, &uuid,
+                          SizeBiometric_Status,
+                          CHAR_PROP_NOTIFY,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomBiometric_StatusHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : BIOMETRIC_STATUS, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : BIOMETRIC_STATUS \n\r");
+  }
+  /**
+   *  Biometric_Control
+   */
+  COPY_BIOMETRIC_CONTROL_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomFirearmHdle,
+                          UUID_TYPE_128, &uuid,
+                          SizeBiometric_Control,
+						  CHAR_PROP_WRITE_WITHOUT_RESP,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(CustomContext.CustomBiometric_ControlHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : BIOMETRIC_CONTROL, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : BIOMETRIC_CONTROL \n\r");
+  }
+
 
   max_attr_record = 9;
   COPY_DEVICELOCK_UUID(uuid.Char_UUID_128);
@@ -579,6 +628,25 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       else
       {
         APP_DBG_MSG("  Success: aci_gatt_update_char_value WEAPON_CONTROL command\n\r");
+      }
+      /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_2*/
+
+      /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_2*/
+      break;
+
+    case CUSTOM_STM_BIOMETRIC_STATUS:
+      ret = aci_gatt_update_char_value(CustomContext.CustomFirearmHdle,
+                                       CustomContext.CustomBiometric_StatusHdle,
+                                       0, /* charValOffset */
+                                       SizeBiometric_Status, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value BIOMETRIC_STATUS command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value BIOMETRIC_STATUS command\n\r");
       }
       /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_2*/
 
