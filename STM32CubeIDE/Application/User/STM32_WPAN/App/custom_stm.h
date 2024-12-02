@@ -56,6 +56,10 @@ typedef enum
   CUSTOM_STM_WEAPON_STATUS_READ_EVT,
   /* Weapon_Control */
   CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT,
+  /* Weapon_Control */
+  CUSTOM_STM_BIOMETRIC_STATUS_READ_EVT,
+  /* Weapon_Control */
+  CUSTOM_STM_BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT,
   /* Action */
   CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT,
   /* Pin */
@@ -93,6 +97,8 @@ typedef struct
 extern uint16_t SizeBattery_Status;
 extern uint16_t SizeWeapon_Status;
 extern uint16_t SizeWeapon_Control;
+extern uint16_t SizeBiometric_Status;
+extern uint16_t SizeBiometric_Control;
 extern uint16_t SizeAction;
 extern uint16_t SizePin;
 extern uint16_t SizeState;

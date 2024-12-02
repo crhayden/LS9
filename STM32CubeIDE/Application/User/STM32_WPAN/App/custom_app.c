@@ -70,6 +70,7 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
   app_message_t	evt;
   osStatus_t	ret;
   uint8_t         weaponControlVal = 0;
+  biometric_control_action_t action = 0;
   switch (pNotification->Custom_Evt_Opcode)
   {
 
@@ -99,7 +100,15 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
             //Error_Handler();
         }
 
-    /* DeviceLock */
+    case CUSTOM_STM_BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT:
+    	action				= (biometric_control_action_t)pNotification->DataTransfered.data[0];
+        evt.bioControlVal	= action;
+        ret           		= osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    	break;
+
+    //
+    // Device lock
+    //
     case CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT */
 

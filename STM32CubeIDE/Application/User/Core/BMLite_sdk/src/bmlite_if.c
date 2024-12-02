@@ -110,7 +110,7 @@ fpc_bep_result_t bep_identify_finger(HCP_comm_t *chain, uint32_t timeout, uint16
         bmlite_get_arg(chain, ARG_ID);
         *template_id = *(uint16_t *)chain->arg.data;
         // Delay for possible updating template on BM-Lite
-        hal_timebase_busy_wait(50);
+        HAL_Delay(50);
     }
 exit:
     bmlite_on_identify_finish();
@@ -308,7 +308,7 @@ fpc_bep_result_t bep_uart_speed_get(HCP_comm_t *chain, uint32_t *speed)
 fpc_bep_result_t bep_sensor_reset(HCP_comm_t *chain)
 {
     // Delay for possible updating template on BM-Lite
-    hal_timebase_busy_wait(50);
+    HAL_Delay(50);
 
     return bmlite_send_cmd(chain, CMD_SENSOR, ARG_RESET);    
 }

@@ -24,6 +24,7 @@
 #include <LS_KeyPad.h>
 #include <LS_Battery.h>
 #include <LS_DeviceLock.h>
+#include <LS_System.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -171,12 +172,13 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   MX_ADC1_Init();
-  //LS_BM_Lite_Init();
+  LS_BM_Lite_Init();
   //LS_Accel_MC3479_Init();
   LS_Motor_DRV8823_Init();
   LS_KeyPad_Init();
   LS_Battery_Init();
   LS_DeviceLock_Init();
+  LS_System_Init();
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */

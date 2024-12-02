@@ -23,6 +23,7 @@
 #include "custom_stm.h"
 
 /* USER CODE BEGIN Includes */
+#include <LS_Biometric_Lite.h>
 
 /* USER CODE END Includes */
 
@@ -188,6 +189,11 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
             Notification.Custom_Evt_Opcode = CUSTOM_STM_PIN_WRITE_NO_RESP_EVT;
             memcpy(&pinCode[0], &attribute_modified->Attr_Data[0], attribute_modified->Attr_Data_Length);
             LS_DeviceLock_HandleAction(&pinCode[0]); 
+          }
+          else if (attribute_modified->Attr_Handle == (CustomContext.CustomBiometric_ControlHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            Notification.Custom_Evt_Opcode = CUSTOM_STM_BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT;
+            Custom_STM_App_Notification(&Notification);
           }
           break;
 

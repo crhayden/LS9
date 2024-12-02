@@ -58,7 +58,7 @@ typedef enum
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-
+//extern BleApplicationContext_t BleApplicationContext;
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/

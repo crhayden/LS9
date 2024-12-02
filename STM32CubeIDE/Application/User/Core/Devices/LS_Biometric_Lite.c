@@ -7,11 +7,13 @@
  **/
 #include <LS_Biometric_Lite.h>
 #include <math.h>
-#include "bmlite_hal.h"
-#include "fpc_bep_types.h"
 #include "hal_config.h"
+#include "app_ble.h"
 #include "bmlite_if.h"
+#include "hcp_tiny.h"
 #include "platform.h"
+#include "bmlite_hal.h"
+//#include "custom_stm.h"
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           Internal Constants
@@ -23,7 +25,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 #define DATA_BUFFER_SIZE (1024*5)
-#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+//#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define DMA_BUF_SIZE   128
 #define DMA_TIMEOUT_MS 2
 /** Program specific commands base number */
@@ -50,6 +52,8 @@ typedef struct
 ///                           Internal Data
 ///
 ////////////////////////////////////////////////////////////////////////////////
+osMutexId_t biometricOpMutexID;
+bool isBioOperationInProgress = false;
 UART_HandleTypeDef huart_host = { 0 };
 static DMA_HandleTypeDef hdma_rx = { 0 };
 static DMA_HandleTypeDef hdma_tx = { 0 };
@@ -85,8 +89,24 @@ osThreadId_t biometricTaskHandle;
 const osThreadAttr_t biometricTask_attributes = {
   .name = "biometricTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 128 * 16
 };
+osMessageQueueId_t biometricQueueHandle; 
+const osMessageQueueAttr_t biometricQueue_attributes = { 
+    .name = "biometricQueue"
+};
+///
+/// Debug counters
+/// 
+static uint32_t bmlite_on_errorCNT = 0;
+static uint32_t bmlite_on_start_captureCNT = 0;
+static uint32_t bmlite_on_finish_captureCNT = 0;
+static uint32_t bmlite_on_start_enrollCNT = 0;
+static uint32_t bmlite_on_finish_enrollCNT = 0;
+static uint32_t bmlite_on_start_enrollcaptureCNT = 0;
+static uint32_t bmlite_on_finish_enrollcaptureCNT = 0;
+static uint32_t bmlite_on_identify_startCNT = 0;
+static uint32_t bmlite_on_identify_finishCNT = 0;
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           Internal Functions
@@ -98,25 +118,170 @@ const osThreadAttr_t biometricTask_attributes = {
 /// @param  argument: Hardcoded to 0.
 ///
 /// @return void
-///
+//
 static void StartBiometricTask(void * argument) {
 
     platform_init(NULL);
     char version[100];
-    uint16_t template_id;
-    uint32_t current_id = 0;
-    bool match;
-
+    //uint16_t template_id;
+//    uint32_t current_id = 0;
+    //bool match = false;
+    app_message_t   evt;
     // These two lines for debug purpose only
     memset(version, 0, 100);
 
+	//fpc_bep_result_t res;
     fpc_bep_result_t res = bep_version(&hcp_chain, version, 99);
     if (res != FPC_BEP_RESULT_OK) {
     	Error_Handler();
     }
-	for (;;) {
-		osDelay(5000);
-	}
+    uint16_t tempCount = 0;
+    uint16_t tempIDs[50];
+    bep_template_get_count(&hcp_chain, &tempCount);
+    bep_template_get_ids(&hcp_chain);
+	uint16_t i = 0;
+	uint16_t l = 0;
+    if (tempCount > 0) {
+    	do {
+    		tempIDs[i] = hcp_chain.arg.data[l];
+    		l = l+2;
+    		i++;
+    	} while (i < tempCount && i < 50);
+    }
+    if (res != FPC_BEP_RESULT_OK) {
+    	Error_Handler();
+    }
+//    res = bep_capture(&hcp_chain, 65000);
+//    if (res != FPC_BEP_RESULT_OK) {
+//    	Error_Handler();
+//    }
+//    uint16_t template_id= 0;
+//    bool match = false;
+//    res = bep_identify_finger(&hcp_chain, &template_id, &match);
+//    if (res != FPC_BEP_RESULT_OK) {
+//    	Error_Handler();
+//    }
+//    res = bep_enroll_finger(&hcp_chain);
+//    res = bep_template_save(&hcp_chain, 9);
+
+//    while (!match) {
+//        res = bep_identify_finger(&hcp_chain, 0, &template_id, &match);
+//        osDelay(100);
+//    }
+    
+//	if (res != FPC_BEP_RESULT_OK) {
+//		Error_Handler();
+//	}
+    bmlite_error_t 				err = 0;
+    bmlite_callback_evt_t 		cb = 0;
+    biometric_control_action_t 	action = 0;
+    uint16_t 					tempID = 0;
+
+	biometricOpMutexID = osMutexNew(NULL);
+    for (;;) {
+        if (osMessageQueueGet(biometricQueueHandle, &evt, 0, osWaitForever) ==  osOK){
+        	//
+        	// handle control events first
+        	//
+        	//
+        	// to do: only send if BLE connected
+        	//
+        	//if (BleApplicationContext.BleApplicationContext_legacy.connectionHandle != 0xFFFF) {
+				if(evt.bioControlVal) {
+					action = evt.bioControlVal;
+					switch (action) {
+						case a_ENROLL_LEFT_THUMB:
+						case a_ENROLL_LEFT_INDEX:
+						case a_ENROLL_LEFT_MIDDLE:
+						case a_ENROLL_LEFT_RING:
+						case a_ENROLL_LEFT_PINKY:
+						case a_ENROLL_RIGHT_THUMB:
+						case a_ENROLL_RIGHT_INDEX:
+						case a_ENROLL_RIGHT_MIDDLE:
+						case a_ENROLL_RIGHT_RING:
+						case a_ENROLL_RIGHT_PINKY:
+							res = bep_enroll_finger(&hcp_chain);
+							res = bep_template_save(&hcp_chain, evt.bioControlVal);
+							break;
+
+						case a_DELETE_LEFT_THUMB:
+						case a_DELETE_LEFT_INDEX:
+						case a_DELETE_LEFT_MIDDLE:
+						case a_DELETE_LEFT_RING:
+						case a_DELETE_LEFT_PINKY:
+						case a_DELETE_RIGHT_THUMB:
+						case a_DELETE_RIGHT_INDEX:
+						case a_DELETE_RIGHT_MIDDLE:
+						case a_DELETE_RIGHT_RING:
+						case a_DELETE_RIGHT_PINKY:
+							tempID = action-10;
+							res = bep_template_remove(&hcp_chain, tempID);
+							break;
+						default:
+							break;
+					}
+				}
+				//
+				// Errors
+				//
+				else if (evt.isBioError) {
+					switch (evt.bioError) {
+						case BMLITE_ERROR_OK:
+						case BMLITE_ERROR_CAPTURE:
+						case BMLITE_ERROR_CAPTURE_START:
+						case BMLITE_ERROR_ENROLL_START:
+						case BMLITE_ERROR_ENROLL_ADD:
+						case BMLITE_ERROR_ENROLL_FINISH:
+						case BMLITE_ERROR_WRONG_ANSWER:
+						case BMLITE_ERROR_FINGER_WAIT:
+						case BMLITE_ERROR_IDENTYFY:
+						case BMLITE_ERROR_TEMPLATE_SAVE:
+						case BMLITE_ERROR_TEMPLATE_DELETE:
+						case BMLITE_ERROR_TEMPLATE_COUNT:
+						case BMLITE_ERROR_TEMPLATE_GETIDS:
+						case BMLITE_ERROR_IMAGE_EXTRACT:
+						case BMLITE_ERROR_IMAGE_GETSIZE:
+						case BMLITE_ERROR_IMAGE_GET:
+						case BMLITE_ERROR_GETVERSION:
+						case BMLITE_ERROR_SW_RESET:
+						case BMLITE_ERROR_CALIBRATE:
+						case BMLITE_ERROR_CALIBRATE_DELETE:
+						case BMLITE_ERROR_SEND_CMD:
+						case BMLITE_ERROR_GET_ARG:
+							  err = evt.bioError;
+							  Custom_STM_App_Update_Char(3, (uint8_t*)&err);
+							  //Custom_STM_App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&err);
+//							break;
+						default:
+							break;
+					}
+				}
+				//
+				// Callback
+				//
+				else {
+					switch (evt.cb) {
+						case    BIOMETRIC_ON_START_CAPTURE:
+						case    BIOMETRIC_ON_FINISH_CAPTURE:
+						case    BIOMETRIC_ON_START_ENROLL:
+						case    BIOMETRIC_ON_FINISH_ENROLL:
+						case    BIOMETRIC_ON_START_ENROLLCAPTURE:
+						case    BIOMETRIC_ON_FINISH_ENROLLCAPTURE:
+						case    BIOMETRIC_ON_IDENTIFY_START:
+						case    BIOMETRIC_ON_IDENTIFY_FINISH:
+
+								cb = evt.cb;
+								//Custom_STM_App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&cb);
+								Custom_STM_App_Update_Char(3, (uint8_t*)&cb);
+							break;
+						default:
+							break;
+
+					}
+				}
+        	//}
+        }
+    }
 }
 //------------------------------------------------------------------------------
 //
@@ -204,11 +369,141 @@ void FPC_BMLITE_USART_DMA_IRQ_HANDLER_TX(void)
 {
     HAL_DMA_IRQHandler(huart_host.hdmatx);
 }
+
+void bmlite_on_error(bmlite_error_t error, int32_t value) {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.isBioError  = true;
+    evt.bioError    = error;
+    evt.bioErrorVal	= value;
+    ret             = osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+	bmlite_on_errorCNT++;
+}
+void bmlite_on_start_capture() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_START_CAPTURE;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_start_captureCNT++;
+    //printf("Put finger on the sensor\n");
+}
+void bmlite_on_finish_capture() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_FINISH_CAPTURE;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_finish_captureCNT++;
+    //printf("Remove finger from the sensor\n");
+}
+void bmlite_on_start_enroll() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_START_ENROLL;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_start_enrollCNT++;
+    //printf("Start enrolling\n")
+}
+void bmlite_on_finish_enroll() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_FINISH_ENROLL;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_finish_enrollCNT++;
+    //printf("Finish enrolling\n");
+}
+void bmlite_on_start_enrollcapture() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_START_ENROLLCAPTURE;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_start_enrollcaptureCNT++;
+}
+void bmlite_on_finish_enrollcapture() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_FINISH_ENROLLCAPTURE;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_finish_enrollcaptureCNT++;
+}
+void bmlite_on_identify_start() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_IDENTIFY_START;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_identify_startCNT++;
+    //printf("Start Identifying\n");
+}
+void bmlite_on_identify_finish() {
+    osStatus_t      ret;
+    app_message_t   evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.cb      =   BIOMETRIC_ON_IDENTIFY_FINISH;
+    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    if (ret != osOK) {
+        //Error_Handler();
+    }
+    bmlite_on_identify_finishCNT++;
+    //printf("Finish Identifying\n");
+}
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           External Functions
 ///
 ////////////////////////////////////////////////////////////////////////////////
+fpc_bep_result_t LS_BM_Lite_Capture(){
+
+    //uint16_t template_id= 0;
+    //bool match = false;
+    fpc_bep_result_t res = bep_capture(&hcp_chain, 0);
+    return res;
+}
+bool LS_BM_Lite_Identify() {
+    uint16_t template_id= 0;
+    bool match = false;
+    fpc_bep_result_t res = bep_identify_finger(&hcp_chain, 0, &template_id, &match);
+    if (res == FPC_BEP_RESULT_TIMEOUT || res == FPC_BEP_RESULT_IO_ERROR) {
+        platform_bmlite_reset();
+    }
+//    if (res != FPC_BEP_RESULT_OK) {
+//    	Error_Handler();
+//    }
+    return match;
+}
+void LS_BM_Lite_Wait_For_Finger_Present(){
+    sensor_wait_finger_not_present(&hcp_chain, 0);
+}
 /**
  * USART init function.
  * @param[in] baudrate Initial baud rate.
@@ -327,9 +622,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
         HAL_GPIO_Init(BMLITE_RST_PORT, &GPIO_InitStruct);
     }
 }
-void LS_BM_Lite_ProcessByte() {
-
-}
 
 size_t hal_bmlite_uart_write(const uint8_t *data, size_t size)
 {
@@ -410,7 +702,8 @@ bool uart_host_rx_data_available(void)
     return rx_available;
 }
 void LS_BM_Lite_Init() {
-	  biometricTaskHandle = osThreadNew(StartBiometricTask, NULL, &biometricTask_attributes);
+    biometricQueueHandle    = osMessageQueueNew(16, sizeof(app_message_t), &biometricQueue_attributes);
+    biometricTaskHandle     = osThreadNew(StartBiometricTask, NULL, &biometricTask_attributes);
 }
 ////////////////////////////////////////////////////////////////////////////////
 ///

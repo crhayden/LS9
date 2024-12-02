@@ -35,6 +35,9 @@ extern "C" {
 #include "cmsis_os.h"
 #include "eeprom_emul.h"
 #include "stdbool.h"
+#include <LS_Biometric_Lite.h>
+#include "fpc_bep_types.h"
+#include "bmlite_if_callbacks.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -44,31 +47,32 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+///
+/// Possible biometric actions
+///
 typedef enum {
-    BMLITE_ERROR_OK = 0,
-    BMLITE_ERROR_CAPTURE,
-    BMLITE_ERROR_CAPTURE_START,
-    BMLITE_ERROR_ENROLL_START,
-    BMLITE_ERROR_ENROLL_ADD,
-    BMLITE_ERROR_ENROLL_FINISH,
-    BMLITE_ERROR_WRONG_ANSWER,
-    BMLITE_ERROR_FINGER_WAIT,
-    BMLITE_ERROR_IDENTYFY,
-    BMLITE_ERROR_TEMPLATE_SAVE,
-    BMLITE_ERROR_TEMPLATE_DELETE,
-    BMLITE_ERROR_TEMPLATE_COUNT,
-    BMLITE_ERROR_TEMPLATE_GETIDS,
-    BMLITE_ERROR_IMAGE_EXTRACT,
-    BMLITE_ERROR_IMAGE_GETSIZE,
-    BMLITE_ERROR_IMAGE_GET,
-    BMLITE_ERROR_GETVERSION,
-    BMLITE_ERROR_SW_RESET,
-    BMLITE_ERROR_CALIBRATE,
-    BMLITE_ERROR_CALIBRATE_DELETE,
-    BMLITE_ERROR_SEND_CMD,
-    BMLITE_ERROR_GET_ARG, // 22
-} bmlite_error_t;
+	a_ENROLL_LEFT_THUMB = 1,
+	a_ENROLL_LEFT_INDEX,
+	a_ENROLL_LEFT_MIDDLE,
+	a_ENROLL_LEFT_RING,
+	a_ENROLL_LEFT_PINKY,
+	a_ENROLL_RIGHT_THUMB,
+	a_ENROLL_RIGHT_INDEX,
+	a_ENROLL_RIGHT_MIDDLE,
+	a_ENROLL_RIGHT_RING,
+	a_ENROLL_RIGHT_PINKY,
 
+	a_DELETE_LEFT_THUMB = 11,
+	a_DELETE_LEFT_INDEX,
+	a_DELETE_LEFT_MIDDLE,
+	a_DELETE_LEFT_RING,
+	a_DELETE_LEFT_PINKY,
+	a_DELETE_RIGHT_THUMB,
+	a_DELETE_RIGHT_INDEX,
+	a_DELETE_RIGHT_MIDDLE,
+	a_DELETE_RIGHT_RING,
+	a_DELETE_RIGHT_PINKY,
+} biometric_control_action_t;
 //
 // Callbacks
 //
@@ -90,11 +94,12 @@ typedef enum {
 } app_event_t;
 
 typedef struct {
-  app_event_t type;
-  bmlite_callback_evt_t cb;
-  bool isBioError;
-  bmlite_error_t bioError;
-  int32_t bioVal;
+  app_event_t 					type;
+  bmlite_callback_evt_t 		cb;
+  bool 							isBioError;
+  bmlite_error_t 				bioError;
+  fpc_bep_result_t 				bioErrorVal;
+  biometric_control_action_t 	bioControlVal;
 } app_message_t;
 
 /* USER CODE END ET */
@@ -109,7 +114,7 @@ extern SPI_HandleTypeDef hspi1;
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define DUNK_TEST_ENABLE 1
+#define DUNK_TEST_ENABLE 0
 
 /* USER CODE END EM */
 

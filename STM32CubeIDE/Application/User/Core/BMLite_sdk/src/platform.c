@@ -32,39 +32,8 @@
 #include "fpc_bep_types.h"
 #include "platform.h"
 #include "bmlite_hal.h"
+#include "main.h"
 
-#include "stm32wbxx_hal.h"
-#include "hal_config.h"
-fpc_bep_result_t hal_board_init(void *params)
-{
-    (void)params;
-
-    //uint32_t debugger = (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk);
-    /* Disable fault exceptions */
-    SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
-    /* Disable the MPU */
-    MPU->CTRL  &= ~MPU_CTRL_ENABLE_Msk;
-
-    /* Configure system flash */
-    // flash_init();
-
-    /* Configure system IRQs */
-    //system_irq_init();
-
-    /* Initialize DMA */
-    //dma_init();
-    stm_uart_init(115200);
-
-
-    return FPC_BEP_RESULT_OK;
-}
-void platform_bmlite_reset(void)
-{
-	HAL_GPIO_WritePin(GPIOB, BIO_RST_Pin, GPIO_PIN_RESET);
-	HAL_Delay(100);
-	HAL_GPIO_WritePin(GPIOB, BIO_RST_Pin, GPIO_PIN_SET);
-	HAL_Delay(100);
-}
 fpc_bep_result_t platform_init(void *params)
 {
     fpc_bep_result_t result;
@@ -76,6 +45,17 @@ fpc_bep_result_t platform_init(void *params)
     return result;
 }
 
+void platform_bmlite_reset(void)
+{
+	HAL_GPIO_WritePin(GPIOB, BIO_RST_Pin
+	                          , GPIO_PIN_RESET);
+    //hal_bmlite_reset(true);
+    HAL_Delay(100);
+    //hal_bmlite_reset(false);{
+    HAL_GPIO_WritePin(GPIOB, BIO_RST_Pin
+    	                          , GPIO_PIN_SET);
+    HAL_Delay(100);
+}
 
 #ifdef BMLITE_ON_UART
 
@@ -175,3 +155,26 @@ __attribute__((weak)) uint32_t hal_check_button_pressed()
     return 0;
 }
 
+fpc_bep_result_t hal_board_init(void *params) {
+
+    (void)params;
+
+//    uint32_t debugger = (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk);
+//    /* Disable fault exceptions */
+//    SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
+//    /* Disable the MPU */
+//    MPU->CTRL  &= ~MPU_CTRL_ENABLE_Msk;
+
+
+#ifdef BMLITE_ON_UART
+    stm_uart_init(115200);
+#else
+#ifdef BMLITE_ON_SPI
+    stm_spi_init(4000000);
+#else
+   #error "BMLITE_ON_SPI or BMLITE_ON_SPI must be defined"
+#endif
+#endif
+
+    return FPC_BEP_RESULT_OK;
+}

@@ -29,7 +29,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "main.h"
 
 #include "fpc_bep_types.h"
 #define BMLITE_ON_UART 1
