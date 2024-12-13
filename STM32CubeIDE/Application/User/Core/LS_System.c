@@ -55,33 +55,28 @@ static void SystemTask(void * argument) {
   	osStatus_t			ret;
   	//fpc_bep_result_t	res;
     for (;;) {
-    	if(!isBioOperationInProgress) {
-//			LS_BM_Lite_Wait_For_Finger_Present();
-//			match = LS_BM_Lite_Identify();
-			if (match) {
-				state = LS_Motor_GetState();
-				if (state == s_LOCKED) {
-					evt.type      = MOTOR_UNLOCK;
-					ret           = osMessageQueuePut(motorQueueHandle, &evt, 0, 0);
-					if (ret != osOK) {
-						Error_Handler();
-					}
-				}
-				//
-				// for testing only
-				//
-				else if (state == s_UNLOCKED) {
-					evt.type      = MOTOR_LOCK;
-					ret           = osMessageQueuePut(motorQueueHandle, &evt, 0, 0);
-					if (ret != osOK) {
-						Error_Handler();
-					}
+		LS_BM_Lite_Wait_For_Finger_Present();
+		match = LS_BM_Lite_Identify();
+		if (match) {
+			state = LS_Motor_GetState();
+			if (state == s_LOCKED) {
+				evt.type      = MOTOR_UNLOCK;
+				ret           = osMessageQueuePut(motorQueueHandle, &evt, 0, 0);
+				if (ret != osOK) {
+					Error_Handler();
 				}
 			}
-//			else {
-//				osDelay(SYSTEM_TASK_SLEEP_TIME*5);
-//			}
-    	}
+			//
+			// for testing only
+			//
+			else if (state == s_UNLOCKED) {
+				evt.type      = MOTOR_LOCK;
+				ret           = osMessageQueuePut(motorQueueHandle, &evt, 0, 0);
+				if (ret != osOK) {
+					Error_Handler();
+				}
+			}
+		}
         osDelay(SYSTEM_TASK_SLEEP_TIME);
     }
 }

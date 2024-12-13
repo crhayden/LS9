@@ -13,6 +13,7 @@
 #include "hcp_tiny.h"
 #include "platform.h"
 #include "bmlite_hal.h"
+#include "LS_System.h"
 //#include "custom_stm.h"
 ////////////////////////////////////////////////////////////////////////////////
 ///
@@ -53,7 +54,6 @@ typedef struct
 ///
 ////////////////////////////////////////////////////////////////////////////////
 osMutexId_t biometricOpMutexID;
-bool isBioOperationInProgress = false;
 UART_HandleTypeDef huart_host = { 0 };
 static DMA_HandleTypeDef hdma_rx = { 0 };
 static DMA_HandleTypeDef hdma_tx = { 0 };
@@ -112,6 +112,14 @@ static uint32_t bmlite_on_identify_finishCNT = 0;
 ///                           Internal Functions
 ///
 ////////////////////////////////////////////////////////////////////////////////
+static void _bmLiteLock() {
+    osMutexAcquire(biometricOpMutexID, osWaitForever);
+}
+static void _bmLiteUnLock() {
+    osMutexRelease(biometricOpMutexID);
+}
+
+
 ///
 /// @brief  Function implementing the biometric task.
 ///
@@ -136,21 +144,21 @@ static void StartBiometricTask(void * argument) {
     	Error_Handler();
     }
     uint16_t tempCount = 0;
-    uint16_t tempIDs[50];
-    bep_template_get_count(&hcp_chain, &tempCount);
-    bep_template_get_ids(&hcp_chain);
-	uint16_t i = 0;
-	uint16_t l = 0;
-    if (tempCount > 0) {
-    	do {
-    		tempIDs[i] = hcp_chain.arg.data[l];
-    		l = l+2;
-    		i++;
-    	} while (i < tempCount && i < 50);
-    }
-    if (res != FPC_BEP_RESULT_OK) {
-    	Error_Handler();
-    }
+//    uint16_t tempIDs[50] = {};
+//    bep_template_get_count(&hcp_chain, &tempCount);
+//    bep_template_get_ids(&hcp_chain);
+//	uint16_t i = 0;
+//	uint16_t l = 0;
+//    if (tempCount > 0) {
+//    	do {
+//    		tempIDs[i] = hcp_chain.arg.data[l];
+//    		l = l+2;
+//    		i++;
+//    	} while (i < tempCount && i < 50);
+//    }
+//    if (res != FPC_BEP_RESULT_OK) {
+//    	Error_Handler();
+//    }
 //    res = bep_capture(&hcp_chain, 65000);
 //    if (res != FPC_BEP_RESULT_OK) {
 //    	Error_Handler();
@@ -172,12 +180,13 @@ static void StartBiometricTask(void * argument) {
 //	if (res != FPC_BEP_RESULT_OK) {
 //		Error_Handler();
 //	}
-    bmlite_error_t 				err = 0;
-    bmlite_callback_evt_t 		cb = 0;
-    biometric_control_action_t 	action = 0;
-    uint16_t 					tempID = 0;
+    bmlite_error_t 				err                 = 0;
+    bmlite_callback_evt_t 		cb                  = 0;
+    biometric_control_action_t 	action              = 0;
+    uint16_t 					tempID              = 0;
+    uint8_t                     fingerprintOffset   = 50;
+    int8_t 						retVal 				= 0;
 
-	biometricOpMutexID = osMutexNew(NULL);
     for (;;) {
         if (osMessageQueueGet(biometricQueueHandle, &evt, 0, osWaitForever) ==  osOK){
         	//
@@ -189,36 +198,136 @@ static void StartBiometricTask(void * argument) {
         	//if (BleApplicationContext.BleApplicationContext_legacy.connectionHandle != 0xFFFF) {
 				if(evt.bioControlVal) {
 					action = evt.bioControlVal;
-					switch (action) {
-						case a_ENROLL_LEFT_THUMB:
-						case a_ENROLL_LEFT_INDEX:
-						case a_ENROLL_LEFT_MIDDLE:
-						case a_ENROLL_LEFT_RING:
-						case a_ENROLL_LEFT_PINKY:
-						case a_ENROLL_RIGHT_THUMB:
-						case a_ENROLL_RIGHT_INDEX:
-						case a_ENROLL_RIGHT_MIDDLE:
-						case a_ENROLL_RIGHT_RING:
-						case a_ENROLL_RIGHT_PINKY:
-							res = bep_enroll_finger(&hcp_chain);
-							res = bep_template_save(&hcp_chain, evt.bioControlVal);
-							break;
-
-						case a_DELETE_LEFT_THUMB:
-						case a_DELETE_LEFT_INDEX:
-						case a_DELETE_LEFT_MIDDLE:
-						case a_DELETE_LEFT_RING:
-						case a_DELETE_LEFT_PINKY:
-						case a_DELETE_RIGHT_THUMB:
-						case a_DELETE_RIGHT_INDEX:
-						case a_DELETE_RIGHT_MIDDLE:
-						case a_DELETE_RIGHT_RING:
-						case a_DELETE_RIGHT_PINKY:
-							tempID = action-10;
-							res = bep_template_remove(&hcp_chain, tempID);
-							break;
-						default:
-							break;
+                    //
+                    // Must be in the valid range
+                    //
+                    if (action > 0 && action <=100){
+    					switch (action) {
+                            case a_USER1_ENROLL_LEFT_THUMB:
+                            case a_USER1_ENROLL_LEFT_INDEX:
+                            case a_USER1_ENROLL_LEFT_MIDDLE:
+                            case a_USER1_ENROLL_LEFT_RING:
+                            case a_USER1_ENROLL_LEFT_PINKY:
+                            case a_USER1_ENROLL_RIGHT_THUMB:
+                            case a_USER1_ENROLL_RIGHT_INDEX:
+                            case a_USER1_ENROLL_RIGHT_MIDDLE:
+                            case a_USER1_ENROLL_RIGHT_RING:
+                            case a_USER1_ENROLL_RIGHT_PINKY:
+                            case a_USER2_ENROLL_LEFT_THUMB:
+                            case a_USER2_ENROLL_LEFT_INDEX:
+                            case a_USER2_ENROLL_LEFT_MIDDLE:
+                            case a_USER2_ENROLL_LEFT_RING:
+                            case a_USER2_ENROLL_LEFT_PINKY:
+                            case a_USER2_ENROLL_RIGHT_THUMB:
+                            case a_USER2_ENROLL_RIGHT_INDEX:
+                            case a_USER2_ENROLL_RIGHT_MIDDLE:
+                            case a_USER2_ENROLL_RIGHT_RING:
+                            case a_USER2_ENROLL_RIGHT_PINKY:
+                            case a_USER3_ENROLL_LEFT_THUMB:
+                            case a_USER3_ENROLL_LEFT_INDEX:
+                            case a_USER3_ENROLL_LEFT_MIDDLE:
+                            case a_USER3_ENROLL_LEFT_RING:
+                            case a_USER3_ENROLL_LEFT_PINKY:
+                            case a_USER3_ENROLL_RIGHT_THUMB:
+                            case a_USER3_ENROLL_RIGHT_INDEX:
+                            case a_USER3_ENROLL_RIGHT_MIDDLE:
+                            case a_USER3_ENROLL_RIGHT_RING:
+                            case a_USER3_ENROLL_RIGHT_PINKY:
+                            case a_USER4_ENROLL_LEFT_THUMB:
+                            case a_USER4_ENROLL_LEFT_INDEX:
+                            case a_USER4_ENROLL_LEFT_MIDDLE:
+                            case a_USER4_ENROLL_LEFT_RING:
+                            case a_USER4_ENROLL_LEFT_PINKY:
+                            case a_USER4_ENROLL_RIGHT_THUMB:
+                            case a_USER4_ENROLL_RIGHT_INDEX:
+                            case a_USER4_ENROLL_RIGHT_MIDDLE:
+                            case a_USER4_ENROLL_RIGHT_RING:
+                            case a_USER4_ENROLL_RIGHT_PINKY:
+                            case a_USER5_ENROLL_LEFT_THUMB:
+                            case a_USER5_ENROLL_LEFT_INDEX:
+                            case a_USER5_ENROLL_LEFT_MIDDLE:
+                            case a_USER5_ENROLL_LEFT_RING:
+                            case a_USER5_ENROLL_LEFT_PINKY:
+                            case a_USER5_ENROLL_RIGHT_THUMB:
+                            case a_USER5_ENROLL_RIGHT_INDEX:
+                            case a_USER5_ENROLL_RIGHT_MIDDLE:
+                            case a_USER5_ENROLL_RIGHT_RING:
+                            case a_USER5_ENROLL_RIGHT_PINKY:
+                                _bmLiteLock();
+                                //
+                                // Terminate any current operations
+                                //
+                                platform_bmlite_reset();
+    							res = bep_enroll_finger(&hcp_chain);
+    							res = bep_template_save(&hcp_chain, evt.bioControlVal);
+                                _bmLiteUnLock();
+                                retVal = (int8_t)res;
+                                Custom_STM_App_Update_Char(3, (uint8_t*)&retVal);
+    							break;
+                            case a_USER1_DELETE_LEFT_THUMB:
+                            case a_USER1_DELETE_LEFT_INDEX:
+                            case a_USER1_DELETE_LEFT_MIDDLE:
+                            case a_USER1_DELETE_LEFT_RING:
+                            case a_USER1_DELETE_LEFT_PINKY:
+                            case a_USER1_DELETE_RIGHT_THUMB:
+                            case a_USER1_DELETE_RIGHT_INDEX:
+                            case a_USER1_DELETE_RIGHT_MIDDLE:
+                            case a_USER1_DELETE_RIGHT_RING:
+                            case a_USER1_DELETE_RIGHT_PINKY:
+                            case a_USER2_DELETE_LEFT_THUMB:
+                            case a_USER2_DELETE_LEFT_INDEX:
+                            case a_USER2_DELETE_LEFT_MIDDLE:
+                            case a_USER2_DELETE_LEFT_RING:
+                            case a_USER2_DELETE_LEFT_PINKY:
+                            case a_USER2_DELETE_RIGHT_THUMB:
+                            case a_USER2_DELETE_RIGHT_INDEX:
+                            case a_USER2_DELETE_RIGHT_MIDDLE:
+                            case a_USER2_DELETE_RIGHT_RING:
+                            case a_USER2_DELETE_RIGHT_PINKY:
+                            case a_USER3_DELETE_LEFT_THUMB:
+                            case a_USER3_DELETE_LEFT_INDEX:
+                            case a_USER3_DELETE_LEFT_MIDDLE:
+                            case a_USER3_DELETE_LEFT_RING:
+                            case a_USER3_DELETE_LEFT_PINKY:
+                            case a_USER3_DELETE_RIGHT_THUMB:
+                            case a_USER3_DELETE_RIGHT_INDEX:
+                            case a_USER3_DELETE_RIGHT_MIDDLE:
+                            case a_USER3_DELETE_RIGHT_RING:
+                            case a_USER3_DELETE_RIGHT_PINKY:
+                            case a_USER4_DELETE_LEFT_THUMB:
+                            case a_USER4_DELETE_LEFT_INDEX:
+                            case a_USER4_DELETE_LEFT_MIDDLE:
+                            case a_USER4_DELETE_LEFT_RING:
+                            case a_USER4_DELETE_LEFT_PINKY:
+                            case a_USER4_DELETE_RIGHT_THUMB:
+                            case a_USER4_DELETE_RIGHT_INDEX:
+                            case a_USER4_DELETE_RIGHT_MIDDLE:
+                            case a_USER4_DELETE_RIGHT_RING:
+                            case a_USER4_DELETE_RIGHT_PINKY:
+                            case a_USER5_DELETE_LEFT_THUMB:
+                            case a_USER5_DELETE_LEFT_INDEX:
+                            case a_USER5_DELETE_LEFT_MIDDLE:
+                            case a_USER5_DELETE_LEFT_RING:
+                            case a_USER5_DELETE_LEFT_PINKY:
+                            case a_USER5_DELETE_RIGHT_THUMB:
+                            case a_USER5_DELETE_RIGHT_INDEX:
+                            case a_USER5_DELETE_RIGHT_MIDDLE:
+                            case a_USER5_DELETE_RIGHT_RING:
+                            case a_USER5_DELETE_RIGHT_PINKY:
+    							tempID = action-fingerprintOffset;
+                                _bmLiteLock();
+                                //
+                                // Terminate any current operations
+                                //
+                                platform_bmlite_reset();
+    							res = bep_template_remove(&hcp_chain, tempID);
+                                _bmLiteUnLock(); 
+                                retVal = (int8_t)res;
+                                Custom_STM_App_Update_Char(3, (uint8_t*)&retVal);
+    							break;
+    						default:
+    							break;
+                        }
 					}
 				}
 				//
@@ -377,124 +486,66 @@ void bmlite_on_error(bmlite_error_t error, int32_t value) {
     evt.isBioError  = true;
     evt.bioError    = error;
     evt.bioErrorVal	= value;
-    ret             = osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    uint8_t v       = (uint8_t)error;
+    //ret             = osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    Custom_STM_App_Update_Char(3, (uint8_t*)&v);
     if (ret != osOK) {
         //Error_Handler();
     }
 	bmlite_on_errorCNT++;
 }
 void bmlite_on_start_capture() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_START_CAPTURE;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_start_captureCNT++;
-    //printf("Put finger on the sensor\n");
 }
 void bmlite_on_finish_capture() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_FINISH_CAPTURE;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_finish_captureCNT++;
-    //printf("Remove finger from the sensor\n");
 }
 void bmlite_on_start_enroll() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_START_ENROLL;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_start_enrollCNT++;
-    //printf("Start enrolling\n")
 }
 void bmlite_on_finish_enroll() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_FINISH_ENROLL;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_finish_enrollCNT++;
-    //printf("Finish enrolling\n");
 }
 void bmlite_on_start_enrollcapture() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_START_ENROLLCAPTURE;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_start_enrollcaptureCNT++;
 }
 void bmlite_on_finish_enrollcapture() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_FINISH_ENROLLCAPTURE;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_finish_enrollcaptureCNT++;
 }
 void bmlite_on_identify_start() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_IDENTIFY_START;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_identify_startCNT++;
-    //printf("Start Identifying\n");
 }
 void bmlite_on_identify_finish() {
-    osStatus_t      ret;
-    app_message_t   evt;
-    memset(&evt, 0, sizeof(evt));
-    evt.cb      =   BIOMETRIC_ON_IDENTIFY_FINISH;
-    ret         =   osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    if (ret != osOK) {
-        //Error_Handler();
-    }
     bmlite_on_identify_finishCNT++;
-    //printf("Finish Identifying\n");
 }
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           External Functions
 ///
 ////////////////////////////////////////////////////////////////////////////////
-fpc_bep_result_t LS_BM_Lite_Capture(){
-
-    //uint16_t template_id= 0;
-    //bool match = false;
-    fpc_bep_result_t res = bep_capture(&hcp_chain, 0);
-    return res;
-}
+//fpc_bep_result_t LS_BM_Lite_Capture(){
+//
+//    //uint16_t template_id= 0;
+//    //bool match = false;
+//    _bmLiteLock();
+//    fpc_bep_result_t res = bep_capture(&hcp_chain, 0);
+//    _bmLiteUnLock();
+////    int8_t v = (int8_t)res;
+////    Custom_STM_App_Update_Char(3, (uint8_t*)&v);
+//    return res;
+//}
 bool LS_BM_Lite_Identify() {
     uint16_t template_id= 0;
     bool match = false;
-    fpc_bep_result_t res = bep_identify_finger(&hcp_chain, 0, &template_id, &match);
+    //_bmLiteLock();
+    fpc_bep_result_t res = bep_identify_finger(&hcp_chain, 1000, &template_id, &match);
+    //_bmLiteUnLock();
     if (res == FPC_BEP_RESULT_TIMEOUT || res == FPC_BEP_RESULT_IO_ERROR) {
         platform_bmlite_reset();
+    }
+    int8_t v = (int8_t)res;
+    if (match && res == FPC_BEP_RESULT_OK) {
+        Custom_STM_App_Update_Char(3, (uint8_t*)&v);
     }
 //    if (res != FPC_BEP_RESULT_OK) {
 //    	Error_Handler();
@@ -502,7 +553,9 @@ bool LS_BM_Lite_Identify() {
     return match;
 }
 void LS_BM_Lite_Wait_For_Finger_Present(){
-    sensor_wait_finger_not_present(&hcp_chain, 0);
+    //_bmLiteLock();
+    sensor_wait_finger_not_present(&hcp_chain, 1000);
+    //_bmLiteUnLock();
 }
 /**
  * USART init function.
@@ -702,6 +755,7 @@ bool uart_host_rx_data_available(void)
     return rx_available;
 }
 void LS_BM_Lite_Init() {
+	biometricOpMutexID     = osMutexNew(NULL);
     biometricQueueHandle    = osMessageQueueNew(16, sizeof(app_message_t), &biometricQueue_attributes);
     biometricTaskHandle     = osThreadNew(StartBiometricTask, NULL, &biometricTask_attributes);
 }
