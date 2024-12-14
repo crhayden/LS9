@@ -9,6 +9,7 @@
 #define SRC_DEVICES_LS_BIOMETRIC_LITE_H_
 #include "main.h"
 #include "fpc_bep_types.h"
+#include "custom_stm.h"
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                              External Data

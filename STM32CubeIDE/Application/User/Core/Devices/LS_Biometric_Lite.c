@@ -14,7 +14,6 @@
 #include "platform.h"
 #include "bmlite_hal.h"
 #include "LS_System.h"
-//#include "custom_stm.h"
 ////////////////////////////////////////////////////////////////////////////////
 ///
 ///                           Internal Constants
@@ -143,7 +142,7 @@ static void StartBiometricTask(void * argument) {
     if (res != FPC_BEP_RESULT_OK) {
     	Error_Handler();
     }
-    uint16_t tempCount = 0;
+//    uint16_t tempCount = 0;
 //    uint16_t tempIDs[50] = {};
 //    bep_template_get_count(&hcp_chain, &tempCount);
 //    bep_template_get_ids(&hcp_chain);
@@ -262,7 +261,7 @@ static void StartBiometricTask(void * argument) {
     							res = bep_template_save(&hcp_chain, evt.bioControlVal);
                                 _bmLiteUnLock();
                                 retVal = (int8_t)res;
-                                Custom_STM_App_Update_Char(3, (uint8_t*)&retVal);
+                                App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&retVal);
     							break;
                             case a_USER1_DELETE_LEFT_THUMB:
                             case a_USER1_DELETE_LEFT_INDEX:
@@ -323,7 +322,7 @@ static void StartBiometricTask(void * argument) {
     							res = bep_template_remove(&hcp_chain, tempID);
                                 _bmLiteUnLock(); 
                                 retVal = (int8_t)res;
-                                Custom_STM_App_Update_Char(3, (uint8_t*)&retVal);
+                                App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&retVal);
     							break;
     						default:
     							break;
@@ -358,8 +357,8 @@ static void StartBiometricTask(void * argument) {
 						case BMLITE_ERROR_SEND_CMD:
 						case BMLITE_ERROR_GET_ARG:
 							  err = evt.bioError;
-							  Custom_STM_App_Update_Char(3, (uint8_t*)&err);
-							  //Custom_STM_App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&err);
+							  App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&err);
+							  //App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&err);
 //							break;
 						default:
 							break;
@@ -380,8 +379,8 @@ static void StartBiometricTask(void * argument) {
 						case    BIOMETRIC_ON_IDENTIFY_FINISH:
 
 								cb = evt.cb;
-								//Custom_STM_App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&cb);
-								Custom_STM_App_Update_Char(3, (uint8_t*)&cb);
+								//App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&cb);
+								App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&cb);
 							break;
 						default:
 							break;
@@ -488,7 +487,7 @@ void bmlite_on_error(bmlite_error_t error, int32_t value) {
     evt.bioErrorVal	= value;
     uint8_t v       = (uint8_t)error;
     //ret             = osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    Custom_STM_App_Update_Char(3, (uint8_t*)&v);
+    App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&v);
     if (ret != osOK) {
         //Error_Handler();
     }
@@ -531,7 +530,7 @@ void bmlite_on_identify_finish() {
 //    fpc_bep_result_t res = bep_capture(&hcp_chain, 0);
 //    _bmLiteUnLock();
 ////    int8_t v = (int8_t)res;
-////    Custom_STM_App_Update_Char(3, (uint8_t*)&v);
+////    App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&v);
 //    return res;
 //}
 bool LS_BM_Lite_Identify() {
@@ -545,7 +544,7 @@ bool LS_BM_Lite_Identify() {
     }
     int8_t v = (int8_t)res;
     if (match && res == FPC_BEP_RESULT_OK) {
-        Custom_STM_App_Update_Char(3, (uint8_t*)&v);
+        App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&v);
     }
 //    if (res != FPC_BEP_RESULT_OK) {
 //    	Error_Handler();
@@ -755,7 +754,7 @@ bool uart_host_rx_data_available(void)
     return rx_available;
 }
 void LS_BM_Lite_Init() {
-	biometricOpMutexID     = osMutexNew(NULL);
+	biometricOpMutexID		= osMutexNew(NULL);
     biometricQueueHandle    = osMessageQueueNew(16, sizeof(app_message_t), &biometricQueue_attributes);
     biometricTaskHandle     = osThreadNew(StartBiometricTask, NULL, &biometricTask_attributes);
 }

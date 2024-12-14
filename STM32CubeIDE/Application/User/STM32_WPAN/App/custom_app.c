@@ -65,29 +65,29 @@ uint16_t Connection_Handle;
 
 
 /* Functions Definition ------------------------------------------------------*/
-void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotification)
+void App_Notification(BLE_Event_Info_t *pNotification)
 {
   app_message_t	evt;
   osStatus_t	ret;
   uint8_t         weaponControlVal = 0;
   biometric_control_action_t action = 0;
-  switch (pNotification->Custom_Evt_Opcode)
+  switch (pNotification->eventID)
   {
 
     /* FireArm */
-    case CUSTOM_STM_BATTERY_STATUS_READ_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_BATTERY_STATUS_READ_EVT */
+    case BATTERY_STATUS_READ_EVT:
+      /* USER CODE BEGIN BATTERY_STATUS_READ_EVT */
 
-      /* USER CODE END CUSTOM_STM_BATTERY_STATUS_READ_EVT */
+      /* USER CODE END BATTERY_STATUS_READ_EVT */
       break;
 
-    case CUSTOM_STM_WEAPON_STATUS_READ_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_WEAPON_STATUS_READ_EVT */
+    case WEAPON_STATUS_READ_EVT:
+      /* USER CODE BEGIN WEAPON_STATUS_READ_EVT */
 
-      /* USER CODE END CUSTOM_STM_WEAPON_STATUS_READ_EVT */
+      /* USER CODE END WEAPON_STATUS_READ_EVT */
       break;
 
-    case CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT:
+    case WEAPON_CONTROL_WRITE_NO_RESP_EVT:
         weaponControlVal = pNotification->DataTransfered.data[0];
         if (weaponControlVal == 1) {
             evt.type      = MOTOR_LOCK;
@@ -99,8 +99,8 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
         if (ret != osOK) {
             //Error_Handler();
         }
-
-    case CUSTOM_STM_BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT:
+        break;
+    case BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT:
     	action				= (biometric_control_action_t)pNotification->DataTransfered.data[0];
         evt.bioControlVal	= action;
         ret           		= osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
@@ -109,40 +109,40 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     //
     // Device lock
     //
-    case CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT */
+    case ACTION_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN ACTION_WRITE_NO_RESP_EVT */
 
-      /* USER CODE END CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT */
+      /* USER CODE END ACTION_WRITE_NO_RESP_EVT */
       break;
 
-    case CUSTOM_STM_PIN_WRITE_NO_RESP_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_PIN_WRITE_NO_RESP_EVT */
+    case PIN_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN PIN_WRITE_NO_RESP_EVT */
 
-      /* USER CODE END CUSTOM_STM_PIN_WRITE_NO_RESP_EVT */
+      /* USER CODE END PIN_WRITE_NO_RESP_EVT */
       break;
 
-    case CUSTOM_STM_STATE_READ_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_STATE_READ_EVT */
+    case STATE_READ_EVT:
+      /* USER CODE BEGIN STATE_READ_EVT */
 
-      /* USER CODE END CUSTOM_STM_STATE_READ_EVT */
+      /* USER CODE END STATE_READ_EVT */
       break;
 
-    case CUSTOM_STM_PIN_STATUS_READ_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_PIN_STATUS_READ_EVT */
+    case PIN_STATUS_READ_EVT:
+      /* USER CODE BEGIN PIN_STATUS_READ_EVT */
 
-      /* USER CODE END CUSTOM_STM_PIN_STATUS_READ_EVT */
+      /* USER CODE END PIN_STATUS_READ_EVT */
       break;
 
-    case CUSTOM_STM_NOTIFICATION_COMPLETE_EVT:
-      /* USER CODE BEGIN CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
+    case NOTIFICATION_COMPLETE_EVT:
+      /* USER CODE BEGIN NOTIFICATION_COMPLETE_EVT */
 
-      /* USER CODE END CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
+      /* USER CODE END NOTIFICATION_COMPLETE_EVT */
       break;
 
     default:
-      /* USER CODE BEGIN CUSTOM_STM_App_Notification_default */
+      /* USER CODE BEGIN App_Notification_default */
 
-      /* USER CODE END CUSTOM_STM_App_Notification_default */
+      /* USER CODE END App_Notification_default */
       break;
   }
 

@@ -30,64 +30,65 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "LS_Motor_DRV8823.h"
 #include <LS_DeviceLock.h>
+#include "ble_types.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum
 {
-  /* FireArm */
-  CUSTOM_STM_BATTERY_STATUS,
-  CUSTOM_STM_WEAPON_STATUS,
-  CUSTOM_STM_WEAPON_CONTROL,
-  CUSTOM_STM_BIOMETRIC_STATUS,
-  CUSTOM_STM_BIOMETRIC_CONTROL,
-  /* DeviceLock */
-  CUSTOM_STM_ACTION,
-  CUSTOM_STM_PIN,
-  CUSTOM_STM_STATE,
-  CUSTOM_STM_PIN_STATUS,
-} Custom_STM_Char_Opcode_t;
+  BATTERY_STATUS,
+  WEAPON_STATUS,
+  WEAPON_CONTROL,
+
+  ACTION,
+  PIN,
+  STATE,
+  PIN_STATUS,
+
+  BIOMETRIC_STATUS,
+  BIOMETRIC_CONTROL,
+} BLE_CharID_t;
 
 typedef enum
 {
   /* Battery_Status */
-  CUSTOM_STM_BATTERY_STATUS_READ_EVT,
+  BATTERY_STATUS_READ_EVT,
   /* Weapon_Status */
-  CUSTOM_STM_WEAPON_STATUS_READ_EVT,
+  WEAPON_STATUS_READ_EVT,
   /* Weapon_Control */
-  CUSTOM_STM_WEAPON_CONTROL_WRITE_NO_RESP_EVT,
+  WEAPON_CONTROL_WRITE_NO_RESP_EVT,
   /* Weapon_Control */
-  CUSTOM_STM_BIOMETRIC_STATUS_READ_EVT,
+  BIOMETRIC_STATUS_READ_EVT,
   /* Weapon_Control */
-  CUSTOM_STM_BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT,
+  BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT,
   /* Action */
-  CUSTOM_STM_ACTION_WRITE_NO_RESP_EVT,
+  ACTION_WRITE_NO_RESP_EVT,
   /* Pin */
-  CUSTOM_STM_PIN_WRITE_NO_RESP_EVT,
+  PIN_WRITE_NO_RESP_EVT,
   /* State */
-  CUSTOM_STM_STATE_READ_EVT,
+  STATE_READ_EVT,
   /* Pin_Status */
-  CUSTOM_STM_PIN_STATUS_READ_EVT,
+  PIN_STATUS_READ_EVT,
 
-  CUSTOM_STM_NOTIFICATION_COMPLETE_EVT,
+  NOTIFICATION_COMPLETE_EVT,
 
-  CUSTOM_STM_BOOT_REQUEST_EVT
-} Custom_STM_Opcode_evt_t;
+  BOOT_REQUEST_EVT
+} BLE_Char_Evt_t;
 
 typedef struct
 {
   uint8_t 	data[(BLE_EVT_MAX_PARAM_LEN - 2) - 8];
   uint16_t	Length;
-} Custom_STM_Data_t;
+} BLE_Data_t;
 
 typedef struct
 {
-  Custom_STM_Opcode_evt_t       Custom_Evt_Opcode;
-  Custom_STM_Data_t             DataTransfered;
-  uint16_t                      ConnectionHandle;
-  uint8_t                       ServiceInstance;
-  uint16_t                      AttrHandle;
-} Custom_STM_App_Notification_evt_t;
+  BLE_Char_Evt_t  eventID;
+  BLE_Data_t      DataTransfered;
+  uint16_t        ConnectionHandle;
+  uint8_t         ServiceInstance;
+  uint16_t        AttrHandle;
+} BLE_Event_Info_t;
 
 /* USER CODE BEGIN ET */
 
@@ -125,10 +126,10 @@ extern uint16_t SizePin_Status;
 
 /* Exported functions ------------------------------------------------------- */
 void SVCCTL_InitCustomSvc(void);
-void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotification);
-tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode,  uint8_t *pPayload);
-tBleStatus Custom_STM_App_Update_Char_Variable_Length(Custom_STM_Char_Opcode_t CharOpcode, uint8_t *pPayload, uint8_t size);
-tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM_Char_Opcode_t CharOpcode, uint8_t *pPayload);
+void App_Notification(BLE_Event_Info_t *pNotification);
+tBleStatus App_Update_Char(BLE_CharID_t CharOpcode,  uint8_t *pPayload);
+tBleStatus App_Update_Char_Variable_Length(BLE_CharID_t CharOpcode, uint8_t *pPayload, uint8_t size);
+tBleStatus App_Update_Char_Ext(uint16_t Connection_Handle, BLE_CharID_t CharOpcode, uint8_t *pPayload);
 /* USER CODE BEGIN EF */
 
 /* USER CODE END EF */
