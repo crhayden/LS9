@@ -47,6 +47,7 @@ typedef enum
 
   BIOMETRIC_STATUS,
   BIOMETRIC_CONTROL,
+  BIOMETRIC_FINGERPRINT_LIST,
 } BLE_CharID_t;
 
 typedef enum
@@ -57,10 +58,6 @@ typedef enum
   WEAPON_STATUS_READ_EVT,
   /* Weapon_Control */
   WEAPON_CONTROL_WRITE_NO_RESP_EVT,
-  /* Weapon_Control */
-  BIOMETRIC_STATUS_READ_EVT,
-  /* Weapon_Control */
-  BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT,
   /* Action */
   ACTION_WRITE_NO_RESP_EVT,
   /* Pin */
@@ -69,6 +66,13 @@ typedef enum
   STATE_READ_EVT,
   /* Pin_Status */
   PIN_STATUS_READ_EVT,
+
+  /* Weapon_Control */
+  BIOMETRIC_STATUS_READ_EVT,
+  /* Weapon_Control */
+  BIOMETRIC_CONTROL_WRITE_NO_RESP_EVT,
+
+  BIOMETRIC_FINGERPRINT_LIST_READ_EVT,
 
   NOTIFICATION_COMPLETE_EVT,
 

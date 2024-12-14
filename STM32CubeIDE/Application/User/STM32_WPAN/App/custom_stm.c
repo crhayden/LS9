@@ -29,20 +29,21 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct{
-  uint16_t  FirearmService;              /**< FireArm handle */
-  uint16_t  BatteryStatusChar;       /**< Battery_Status handle */
-  uint16_t  WeaponStatusChar;        /**< Weapon_Status handle */
-  uint16_t  WeaponControlChar;       /**< Weapon_Control handle */
+  uint16_t  FirearmService; 
+  uint16_t  BatteryStatusChar;  
+  uint16_t  WeaponStatusChar; 
+  uint16_t  WeaponControlChar;  
 
-  uint16_t  DeviceLockService;           /**< DeviceLock handle */
-  uint16_t  ActionChar;               /**< Action handle */
-  uint16_t  PinChar;                  /**< Pin handle */
-  uint16_t  StateChar;                /**< State handle */
-  uint16_t  PinStatusChar;           /**< Pin_Status handle */
+  uint16_t  DeviceLockService;  
+  uint16_t  ActionChar; 
+  uint16_t  PinChar;  
+  uint16_t  StateChar;  
+  uint16_t  PinStatusChar;  
 
-  uint16_t  BiometricService;              /**< FireArm handle */
-  uint16_t  BiometricErrorChar;     /**< Weapon_Control handle */
-  uint16_t  BiometricControlChar;    /**< Weapon_Control handle */
+  uint16_t  BiometricService; 
+  uint16_t  BiometricErrorChar; 
+  uint16_t  BiometricControlChar; 
+  uint16_t  BiometricFingerprintListChar; 
 
 }BLE_Handles_t;
 
@@ -77,12 +78,15 @@ extern uint16_t Connection_Handle;
 uint16_t _BatStatusSize = 1;
 uint16_t _WeaponStatusSize = 1;
 uint16_t _WeaponControlSize = 1;
-uint16_t _BiometricStatusSize = 1;
-uint16_t _BiometricControlSize = 1;
+
 uint16_t _ActionSize = 1;
 uint16_t _PinSize = 4;
 uint16_t _StateSize = 1;
 uint16_t _PinStatusSize = 1;
+
+uint16_t _BiometricStatusSize = 1;
+uint16_t _BiometricControlSize = 1;
+uint16_t _BiometricFingerPrintSize = 50;
 
 /**
  * START of Section BLE_DRIVER_CONTEXT
@@ -121,20 +125,21 @@ do {\
     uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
                                                                         
-#define COPY_FIREARM_UUID(uuid_struct)              COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x45,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
-#define COPY_BATTERY_STATUS_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x46,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
-#define COPY_WEAPON_STATUS_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x47,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
-#define COPY_WEAPON_CONTROL_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x48,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_FIREARM_UUID(uuid_struct)                    COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x45,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_BATTERY_STATUS_UUID(uuid_struct)             COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x46,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_WEAPON_STATUS_UUID(uuid_struct)              COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x47,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
+#define COPY_WEAPON_CONTROL_UUID(uuid_struct)             COPY_UUID_128(uuid_struct,0x4C,0x4F,0x44,0x48,0x53,0x54,0x41,0x52,0x46,0x41,0x53,0x45,0x52,0x56,0x00,0x00)
 
-#define COPY_DEVICELOCK_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x49,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
-#define COPY_ACTION_UUID(uuid_struct)           COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4A,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
-#define COPY_PIN_UUID(uuid_struct)              COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4B,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
-#define COPY_STATE_UUID(uuid_struct)            COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4C,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
-#define COPY_PIN_STATUS_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4D,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_DEVICELOCK_UUID(uuid_struct)                 COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x49,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_ACTION_UUID(uuid_struct)                     COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4A,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_PIN_UUID(uuid_struct)                        COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4B,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_STATE_UUID(uuid_struct)                      COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4C,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_PIN_STATUS_UUID(uuid_struct)                 COPY_UUID_128(uuid_struct,0x44,0x45,0x46,0x4D,0x43,0x45,0x4C,0x4F,0x43,0x4B,0x00,0x00,0x00,0x00,0x00,0x00)
                                                                         
-#define COPY_BIOMETRIC_UUID(uuid_struct)              COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x6D,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
-#define COPY_BIOMETRIC_STATUS_UUID(uuid_struct)     COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x6E,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
-#define COPY_BIOMETRIC_CONTROL_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x6F,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_BIOMETRIC_UUID(uuid_struct)                  COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x6D,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_BIOMETRIC_STATUS_UUID(uuid_struct)           COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x6E,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_BIOMETRIC_CONTROL_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x6F,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
+#define COPY_BIOMETRIC_FINGERPRINT_LIST_UUID(uuid_struct) COPY_UUID_128(uuid_struct,0x42,0x69,0x6F,0x70,0x64,0x74,0x72,0x69,0x63,0x00,0x00,0x00,0x00,0x00,0x00,0x00)
 
 
 /* USER CODE BEGIN PF */
@@ -193,7 +198,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           }
           else if (attribute_modified->Attr_Handle == (Handles.BiometricControlChar + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
-            Notification.eventID = BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT;
+            Notification.eventID = BIOMETRIC_CONTROL_WRITE_NO_RESP_EVT;
             App_Notification(&Notification);
           }
           break;
@@ -220,6 +225,11 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
     		      lockState = LS_DeviceLock_CheckState();
     		      App_Update_Char(STATE, (uint8_t*)&lockState);
     			} 
+          else if (read_req->Attribute_Handle == (Handles.BiometricFingerprintListChar + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            Notification.eventID = BIOMETRIC_FINGERPRINT_LIST_READ_EVT;
+            App_Notification(&Notification);
+          } 
 
           break;
 
@@ -508,7 +518,7 @@ void SVCCTL_InitCustomSvc(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : PIN_STATUS \n\r");
   }
 
-  max_attr_record = 9;
+  max_attr_record = 11;
 
   COPY_BIOMETRIC_UUID(uuid.Char_UUID_128);
   ret = aci_gatt_add_service(UUID_TYPE_128,
@@ -560,6 +570,27 @@ void SVCCTL_InitCustomSvc(void)
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(Handles.BiometricControlChar));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : BIOMETRIC_CONTROL, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : BIOMETRIC_CONTROL \n\r");
+  }
+  /**
+   *  Biometric_Fingerprint List
+   */
+  COPY_BIOMETRIC_FINGERPRINT_LIST_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(Handles.BiometricService,
+                          UUID_TYPE_128, &uuid,
+                          _BiometricFingerPrintSize,
+              CHAR_PROP_READ,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &(Handles.BiometricFingerprintListChar));
   if (ret != BLE_STATUS_SUCCESS)
   {
     APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : BIOMETRIC_CONTROL, error code: 0x%x \n\r", ret);
@@ -646,24 +677,6 @@ tBleStatus App_Update_Char(BLE_CharID_t id, uint8_t *pPayload)
       /* USER CODE END App_Update_Service_1_Char_2*/
       break;
 
-    case BIOMETRIC_STATUS:
-      ret = aci_gatt_update_char_value(Handles.FirearmService,
-                                       Handles.BiometricErrorChar,
-                                       0, /* charValOffset */
-                                       _BiometricStatusSize, /* charValueLen */
-                                       (uint8_t *)  pPayload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value BIOMETRIC_STATUS command, result : 0x%x \n\r", ret);
-      }
-      else
-      {
-        APP_DBG_MSG("  Success: aci_gatt_update_char_value BIOMETRIC_STATUS command\n\r");
-      }
-      /* USER CODE BEGIN App_Update_Service_1_Char_2*/
-
-      /* USER CODE END App_Update_Service_1_Char_2*/
-      break;
     case STATE:
       ret = aci_gatt_update_char_value(Handles.DeviceLockService,
                                        Handles.StateChar,
@@ -684,6 +697,42 @@ tBleStatus App_Update_Char(BLE_CharID_t id, uint8_t *pPayload)
       break;
 
 
+    case BIOMETRIC_STATUS:
+      ret = aci_gatt_update_char_value(Handles.FirearmService,
+                                       Handles.BiometricErrorChar,
+                                       0, /* charValOffset */
+                                       _BiometricStatusSize, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value BIOMETRIC_STATUS command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value BIOMETRIC_STATUS command\n\r");
+      }
+      /* USER CODE BEGIN App_Update_Service_1_Char_2*/
+
+      /* USER CODE END App_Update_Service_1_Char_2*/
+      break;
+    case BIOMETRIC_FINGERPRINT_LIST:
+      ret = aci_gatt_update_char_value(Handles.BiometricService,
+                                       Handles.BiometricFingerprintListChar,
+                                       0, /* charValOffset */
+                                       _BiometricFingerPrintSize, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value BIOMETRIC_STATUS command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value BIOMETRIC_STATUS command\n\r");
+      }
+      /* USER CODE BEGIN App_Update_Service_1_Char_2*/
+
+      /* USER CODE END App_Update_Service_1_Char_2*/
+      break;
     default:
       break;
   }

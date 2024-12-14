@@ -27,6 +27,7 @@ extern osMutexId_t biometricOpMutexID;
 ///                              External Functions
 ///
 ///////////////////////////////////////////////////////////////////////////////
+uint8_t* LS_BM_Lite_GetFingerprintList();
 fpc_bep_result_t LS_BM_Lite_Capture();
 bool LS_BM_Lite_Identify();
 void LS_BM_Lite_Wait_For_Finger_Present();

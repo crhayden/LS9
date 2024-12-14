@@ -100,11 +100,6 @@ void App_Notification(BLE_Event_Info_t *pNotification)
             //Error_Handler();
         }
         break;
-    case BIMOETRIC_CONTROL_WRITE_NO_RESP_EVT:
-    	action				= (biometric_control_action_t)pNotification->DataTransfered.data[0];
-        evt.bioControlVal	= action;
-        ret           		= osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
-    	break;
 
     //
     // Device lock
@@ -133,16 +128,23 @@ void App_Notification(BLE_Event_Info_t *pNotification)
       /* USER CODE END PIN_STATUS_READ_EVT */
       break;
 
-    case NOTIFICATION_COMPLETE_EVT:
-      /* USER CODE BEGIN NOTIFICATION_COMPLETE_EVT */
+    case BIOMETRIC_STATUS_READ_EVT:
 
-      /* USER CODE END NOTIFICATION_COMPLETE_EVT */
+      break;
+
+    case BIOMETRIC_CONTROL_WRITE_NO_RESP_EVT:
+    	action				= (biometric_control_action_t)pNotification->DataTransfered.data[0];
+        evt.bioControlVal	= action;
+        ret           		= osMessageQueuePut(biometricQueueHandle, &evt, 0, 0);
+    	break;
+    case BIOMETRIC_FINGERPRINT_LIST_READ_EVT:
+        App_Update_Char(BIOMETRIC_FINGERPRINT_LIST, LS_BM_Lite_GetFingerprintList());
+
+      break;
+    case NOTIFICATION_COMPLETE_EVT:
       break;
 
     default:
-      /* USER CODE BEGIN App_Notification_default */
-
-      /* USER CODE END App_Notification_default */
       break;
   }
 

@@ -358,8 +358,7 @@ static void StartBiometricTask(void * argument) {
 						case BMLITE_ERROR_GET_ARG:
 							  err = evt.bioError;
 							  App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&err);
-							  //App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&err);
-//							break;
+                            break;
 						default:
 							break;
 					}
@@ -379,7 +378,6 @@ static void StartBiometricTask(void * argument) {
 						case    BIOMETRIC_ON_IDENTIFY_FINISH:
 
 								cb = evt.cb;
-								//App_Update_Char(CUSTOM_STM_BIOMETRIC_STATUS, (uint8_t*)&cb);
 								App_Update_Char(BIOMETRIC_STATUS_READ_EVT, (uint8_t*)&cb);
 							break;
 						default:
@@ -752,6 +750,23 @@ size_t hal_bmlite_uart_read(uint8_t *data, size_t size)
 bool uart_host_rx_data_available(void)
 {
     return rx_available;
+}
+uint8_t* LS_BM_Lite_GetFingerprintList() {
+    uint16_t tempCount = 0;
+    static uint8_t tempIDs[50] = {};
+    platform_bmlite_reset();
+    bep_template_get_count(&hcp_chain, &tempCount);
+    bep_template_get_ids(&hcp_chain);
+    uint16_t i = 0;
+    uint16_t l = 0;
+    if (tempCount > 0) {
+    	do {
+    		tempIDs[i] = hcp_chain.arg.data[l];
+    		l = l+2;
+    		i++;
+    	} while (i < tempCount && i < 50);
+    }
+    return &tempIDs[0];
 }
 void LS_BM_Lite_Init() {
 	biometricOpMutexID		= osMutexNew(NULL);
